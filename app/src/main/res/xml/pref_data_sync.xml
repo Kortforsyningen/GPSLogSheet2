@@ -4,7 +4,7 @@
          dismiss it. -->
     <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
     <ListPreference
-        android:defaultValue="180"
+        android:defaultValue="-1"
         android:entries="@array/pref_sync_frequency_titles"
         android:entryValues="@array/pref_sync_frequency_values"
         android:key="sync_frequency"
@@ -15,7 +15,27 @@
     <!-- This preference simply launches an intent when selected. Use this UI sparingly, per
          design guidelines. -->
     <Preference android:title="@string/pref_title_system_sync_settings">
+        <!-- TODO: Make this trigger download latest settings from server -->
         <intent android:action="android.settings.SYNC_SETTINGS" />
     </Preference>
+    <!-- TODO: Better text for "points" -->
+    <PreferenceCategory android:title="What to synchronize">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:title="@string/settings_projects"
+            android:key="switch_preference_projects" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:title="@string/settings_points"
+            android:key="switch_preference_points" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:title="@string/settings_bars"
+            android:key="switch_preference_bars" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:title="@string/settings_antennas"
+            android:key="switch_preference_antennas" />
+    </PreferenceCategory>
 
 </PreferenceScreen>
