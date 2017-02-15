@@ -6,7 +6,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="ref.sdfe.gpslogsheet2.ProjectActivity$ProjectSettingsFragment">
+    tools:context="ref.sdfe.gpslogsheet2.ProjectActivity$MapsFragment">
 
     <TextView
         android:id="@+id/section_label"
@@ -14,12 +14,11 @@
         android:layout_height="wrap_content" />
 
     <TextView
-        android:text="Huh!"
+        android:text="Maps placeholder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:id="@+id/textView"
-        tools:text='"Huh!"' />
+        android:id="@+id/textView2" />
 
 </RelativeLayout>
