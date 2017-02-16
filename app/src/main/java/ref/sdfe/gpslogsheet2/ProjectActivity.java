@@ -6,6 +6,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.net.Uri;
+
 
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -65,7 +67,6 @@ public class ProjectActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-
     }
 
 //
@@ -118,7 +119,19 @@ public class ProjectActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_project, container, false);
+            // OLDJO: Inflate the layout
+            View rootView = inflater.inflate(R.layout.fragment_project, container, false);
+
+            //Make this listen for changes in floating action button
+            FloatingActionButton fcb = (FloatingActionButton) rootView.findViewById(R.id.floatingCameraButton);
+            fcb.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                Snackbar.make(view, "TODO: Camera Activity or something. Also placement.", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                }
+            });
+            return rootView;
         }
     }
     /**
