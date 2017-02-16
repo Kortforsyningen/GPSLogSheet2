@@ -26,9 +26,12 @@
     <android.support.design.widget.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/fab_margin"
         app:srcCompat="@android:drawable/ic_menu_camera"
         android:id="@+id/floatingCameraButton"
-        android:layout_gravity="bottom|left" />
+        android:layout_gravity="bottom|left"
+        android:layout_marginLeft="@dimen/fab_margin"
+        android:layout_marginRight="@dimen/fab_margin"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>
