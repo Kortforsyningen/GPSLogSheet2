@@ -19,11 +19,11 @@ GPSLogSheet2 is a metadata collector and script generator for the height measure
 
 On your Android device, allow installation of apps from unknows sources:
 
-.. Settings -> to Security -> Unknown sources ..
+// Settings -> to Security -> Unknown sources //
 
 and check "Allow installation of apps from unknown sources"
 
-The file gpslogsheet2.apk can now be sidelouded onto the device.
+The file gpslogsheet2.apk can now be sideloaded onto the device.
 
 ## Usage
 
@@ -39,7 +39,7 @@ Current progress:
 - [x] Create SQLite database
 - [x] Settings activity
 - [ ] Interface with the server
-- [ ] Create ETL (Extract, Transfor, Load) functions
+- [ ] Create ETL (Extract, Transform, Load) functions
 - [ ] Ability to save projects
 - [ ] Ability to load projects
 - [ ] Generation of .bat scripts
