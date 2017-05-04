@@ -3,6 +3,7 @@
     package="ref.sdfe.gpslogsheet2">
 
     <uses-feature android:name="android.hardware.camera" />
+
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
@@ -35,6 +36,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ref.sdfe.gpslogsheet2.MainActivity" />
         </activity>
+        <activity android:name=".UpdateActivity"></activity>
     </application>
 
 </manifest>

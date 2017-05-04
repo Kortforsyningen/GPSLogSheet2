@@ -4,15 +4,18 @@ package ref.sdfe.gpslogsheet2;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.provider.ContactsContract;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
@@ -20,6 +23,7 @@ import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -39,6 +43,26 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
      */
+//    public Context baseContext;
+//    private static DataSyncListener dataSyncListener;
+
+//    private class DataSyncListener implements Preference.OnPreferenceClickListener {
+//
+//        @Override
+//        public boolean onPreferenceClick(Preference preference) {
+//            //USE mContext as the context object here
+//            String key = preference.getKey();
+//            if (key.equals("syncNow")) {
+//                //SyncDataFTP session = new SyncDataFTP(baseContext);
+//                int duration = Toast.LENGTH_SHORT;
+//                Toast toast = Toast.makeText(baseContext, "huh!", duration);
+//                toast.show();
+//                session.execute();
+//            }
+//            return false;
+//        }
+//    }
+
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
@@ -109,6 +133,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         // Set the listener to watch for value changes.
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
+//        //Add click listener OLDJO
+//        preference.setOnPreferenceClickListener(DataSyncListener);
+
         // Trigger the listener immediately with the preference's
         // current value.
         sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
@@ -121,6 +148,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
+//        baseContext = getBaseContext();
+//        dataSyncListener = new DataSyncListener();
+
     }
 
     /**
@@ -253,6 +283,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+            //dataSyncListener = new DataSyncListener()
+            //onPreferenceClick(findPreference("syncNow"));
+            //dataSyncListener.onPreferenceClick(findPreference("syncNow"));
+            //dataSyncListener.onPreferenceClick();
+
         }
 
         @Override

@@ -83,5 +83,7 @@
     <string name="settings_projects">Projects</string>
     <string name="pref_header_credentials">Credentials</string>
     <string name="settings_instruments">Instruments</string>
+    <string name="updateActivityTitle">Updating...</string>
+    <string name="updateCancelButton">Cancel Update</string>
 
 </resources>
