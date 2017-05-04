@@ -14,6 +14,9 @@ import java.util.List;
 
 public class DataBaseHandler extends SQLiteOpenHelper {
 
+    // Singleton pattern
+    private static DataBaseHandler sInstance;
+
     // Define Database structure
 	// Database Version
 	private static final int DATABASE_VERSION = 1;
@@ -57,8 +60,19 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 	private static final String KEY_SET_ID 			= "id";
     private static final String KEY_SET_NAME 		= "setting_name";
 	private static final String KEY_SET_VALUE 		= "setting_val";
-    
-	public DataBaseHandler(Context context) {
+
+    public static synchronized DataBaseHandler getInstance(Context context) {
+        // Use the application context, which will ensure that you
+        // don't accidentally leak an Activity's context.
+        // See this article for more information: http://bit.ly/6LRzfx
+        if (sInstance == null) {
+            sInstance = new DataBaseHandler(context.getApplicationContext());
+        }
+        return sInstance;
+    }
+
+    // Made the constructor private, use getInstance() instead.
+	private DataBaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
 
@@ -118,31 +132,6 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     // CRUD (create, read, update, delete) operations
 
     //Alarms
-    public class AlarmEntry{
-        public int alarm_id;
-        public String alarm_name;
-
-        // constructor
-        public AlarmEntry(int alarm_id, String alarm_name){
-            this.alarm_id = alarm_id;
-            this.alarm_name = alarm_name;
-        }
-        // get and set ID
-        public int getID(){
-            return this.alarm_id;
-        }
-        public void setID(int id) {
-            this.alarm_id = id;
-        }
-        // get and set name
-        public String getName(){
-            return this.alarm_name;
-        }
-        public void setName(String name) {
-            this.alarm_name = name;
-        }
-    }
-
     void addAlarmEntry(AlarmEntry alarmEntry) {
         // Open database
         SQLiteDatabase db = this.getWritableDatabase();
@@ -229,31 +218,6 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 
     // ANTENNAE
     //Antennae
-    public class AntennaEntry{
-        public int antenna_id;
-        public String antenna_name;
-
-        // constructor
-        public AntennaEntry(int antenna_id, String antenna_name){
-            this.antenna_id = antenna_id;
-            this.antenna_name = antenna_name;
-        }
-        // get and set ID
-        public int getID(){
-            return this.antenna_id;
-        }
-        public void setID(int id) {
-            this.antenna_id = id;
-        }
-        // get and set name
-        public String getName(){
-            return this.antenna_name;
-        }
-        public void setName(String name) {
-            this.antenna_name = name;
-        }
-    }
-
     void addAntennaEntry(AntennaEntry antennaEntry) {
         // Open database
         SQLiteDatabase db = this.getWritableDatabase();
@@ -339,31 +303,6 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 
     //INSTRUMENTS
     //Instruments
-    public class InstrumentEntry{
-        public int instrument_id;
-        public String instrument_name;
-
-        // constructor
-        public InstrumentEntry(int instrument_id, String instrument_name){
-            this.instrument_id = instrument_id;
-            this.instrument_name = instrument_name;
-        }
-        // get and set ID
-        public int getID(){
-            return this.instrument_id;
-        }
-        public void setID(int id) {
-            this.instrument_id = id;
-        }
-        // get and set name
-        public String getName(){
-            return this.instrument_name;
-        }
-        public void setName(String name) {
-            this.instrument_name = name;
-        }
-    }
-
     void addInstrumentEntry(InstrumentEntry instrumentEntry) {
         // Open database
         SQLiteDatabase db = this.getWritableDatabase();
@@ -449,41 +388,6 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     }
 
     // RODS
-    public class RodEntry{
-        public int rod_id;
-        public String rod_name;
-        public double rod_length; //in meters
-
-        // constructor
-        public RodEntry(int rod_id, String rod_name, double rod_length){
-            this.rod_id = rod_id;
-            this.rod_name = rod_name;
-            this.rod_length = rod_length;
-        }
-        // get and set ID
-        public int getID(){
-            return this.rod_id;
-        }
-        public void setID(int id) {
-            this.rod_id = id;
-        }
-        // get and set name
-        public String getName(){
-            return this.rod_name;
-        }
-        public void setName(String name) {
-            this.rod_name = name;
-        }
-        // get and set length
-        public double getLength(){
-            return this.rod_length;
-        }
-        public void setLength(double length) {
-            this.rod_length = length;
-        }
-
-    }
-
     void addRodEntry(RodEntry rodEntry) {
         // Open database
         SQLiteDatabase db = this.getWritableDatabase();
@@ -509,7 +413,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
             cursor.moveToFirst();
 
         RodEntry rodEntry = new RodEntry(Integer.parseInt(cursor.getString(0)),cursor.getString(1),
-                Double.parseDouble(cursor.getString(3)));
+                Double.parseDouble(cursor.getString(2)));
         // Return Rod entry
         return rodEntry;
     }
@@ -570,59 +474,6 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         db.close();
     }
     //Fixedpoints
-    public class FixedpointEntry{
-        public int fixedpoint_id;
-        public String fixedpoint_gps_name;
-        public String fixedpoint_hs_name;
-        public double fixedpoint_easting;
-        public double fixedpoint_northing;
-
-        // constructor
-        public FixedpointEntry(int fixedpoint_id, String gps_name, String hs_name,
-                               double easting, double northing){
-            this.fixedpoint_id = fixedpoint_id;
-            this.fixedpoint_gps_name = gps_name;
-            this.fixedpoint_hs_name = hs_name;
-            this.fixedpoint_easting = easting;
-            this.fixedpoint_northing = northing;
-        }
-        // get and set ID
-        public int getID(){
-            return this.fixedpoint_id;
-        }
-        public void setID(int id) {
-            this.fixedpoint_id = id;
-        }
-        // get and set gps name
-        public String getGPSName(){
-            return this.fixedpoint_gps_name;
-        }
-        public void setGPSName(String name) {
-            this.fixedpoint_gps_name = name;
-        }
-        // get and set hs name
-        public String getHSName(){
-            return this.fixedpoint_hs_name;
-        }
-        public void setHSName(String name) {
-            this.fixedpoint_hs_name = name;
-        }
-        // get and set easting
-        public double getEasting(){
-            return this.fixedpoint_easting;
-        }
-        public void setEasting(double easting) {
-            this.fixedpoint_easting = easting;
-        }
-        // get and set northing
-        public double getNorthing(){
-            return this.fixedpoint_northing;
-        }
-        public void setNorthing(double northing) {
-            this.fixedpoint_northing = northing;
-        }
-    }
-
     void addFixedpointEntry(FixedpointEntry fixedpointEntry) {
         // Open database
         SQLiteDatabase db = this.getWritableDatabase();

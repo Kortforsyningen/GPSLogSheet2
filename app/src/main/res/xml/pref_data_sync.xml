@@ -41,9 +41,15 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null"
         android:title="@string/pref_title_sync_frequency" />
-    <Preference android:title="@string/pref_title_system_sync_settings">
+    <Preference android:title="@string/pref_title_system_sync_settings" android:key = "syncNow">
         <!-- TODO: Make this trigger download latest settings from server -->
-        <intent android:action="android.settings.SYNC_SETTINGS" />
+        <!--<intent android:action="android.settings.SYNC_SETTINGS" />-->
+        <!--<intent android:action="dataSyncListener.onPreferenceClick(getPreference)"/>-->
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetPackage="ref.sdfe.gpslogsheet2"
+            android:targetClass="ref.sdfe.gpslogsheet2.UpdateActivity"
+            />
     </Preference>
 
 </PreferenceScreen>
