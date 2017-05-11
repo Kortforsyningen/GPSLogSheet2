@@ -7,11 +7,13 @@ package ref.sdfe.gpslogsheet2;
 public class AntennaEntry{
     public int antenna_id;
     public String antenna_name;
+    public String antenna_code;
 
     // constructor
-    public AntennaEntry(int antenna_id, String antenna_name){
+    public AntennaEntry(int antenna_id, String antenna_name, String antenna_code){
         this.antenna_id = antenna_id;
         this.antenna_name = antenna_name;
+        this.antenna_code = antenna_code;
     }
     // get and set ID
     public int getID(){
@@ -26,5 +28,11 @@ public class AntennaEntry{
     }
     public void setName(String name) {
         this.antenna_name = name;
+    }
+    public String getCode(){
+        return this.antenna_code;
+    }
+    public void setCode(String code) {
+        this.antenna_code = code;
     }
 }
