@@ -82,7 +82,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         String CREATE_INSTRUMENTS_TABLE = "CREATE TABLE " + TABLE_INSTRUMENTS + "("
                 + KEY_INST_ID       + " INTEGER PRIMARY KEY,"
-                + KEY_INST_NAME     + " TEXT unique)";
+                + KEY_INST_NAME     + " TEXT)";
         db.execSQL(CREATE_INSTRUMENTS_TABLE);
     	
     	String CREATE_ANTENNAE_TABLE = "CREATE TABLE " + TABLE_ANTENNAE + "("
