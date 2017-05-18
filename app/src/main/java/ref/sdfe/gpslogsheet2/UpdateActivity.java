@@ -80,9 +80,16 @@ public class UpdateActivity extends AppCompatActivity{
             try {
                 // New instance of FTPClient
                 FTPClient ftpClient = new FTPClient();
+                ftpClient.setConnectTimeout(5000);
 
                 //Connect to server
-                ftpClient.connect(InetAddress.getByName(host));
+                try {
+                    ftpClient.connect(InetAddress.getByName(host));
+                }
+                catch(IOException e){
+                    return "FTP timed out, please check host address and internet connection.";
+                }
+
                 reply = ftpClient.getReplyCode();
                 if(!FTPReply.isPositiveCompletion(reply)) {
                     ftpClient.disconnect();
@@ -220,8 +227,15 @@ public class UpdateActivity extends AppCompatActivity{
                 Log.i("Rods",Boolean.toString(rods));
                 if (rods) {
                     filename = "rods.csv";
+                    InputStream inputStream = null;
                     // Retrieve file as inputstream
-                    InputStream inputStream = ftpClient.retrieveFileStream(filename);
+                    try {
+                        inputStream = ftpClient.retrieveFileStream(filename);
+                    }
+                    catch(IOException e){
+                       return "File not found";
+                    }
+
                     Log.i("FTP", ftpClient.getReplyString());
 
                     if (inputStream != null) {
@@ -249,10 +263,16 @@ public class UpdateActivity extends AppCompatActivity{
 
                         }
                         br.close();
+                    }else{
+                        return "Could not load 'rods.csv'.";
                     }
-
-                    inputStream.close();
-                    ftpClient.completePendingCommand();
+                    try{
+                        inputStream.close();
+                    }catch(NullPointerException e){
+                        return "File error.";
+                    }finally{
+                        ftpClient.completePendingCommand();
+                    }
                 }
                 Log.i("Instruments",Boolean.toString(instruments));
                 if (instruments) {
