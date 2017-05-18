@@ -11,6 +11,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,25 +26,29 @@ public class UpdateActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update);
         new SyncDataFTP(this.getApplicationContext()).execute();
+        finish();
     }
-    static class SyncDataFTP extends AsyncTask<Context, Integer, Boolean> {
+    static class SyncDataFTP extends AsyncTask<Context, Integer, CharSequence> {
 
-        public Context mContext;
-        public SyncDataFTP(Context context) {
+        private Context mContext;
+        private SyncDataFTP(Context context) {
             mContext = context;
         }
 
-        public String username = "";
-        public String password = "";
-        public String host = "";
-        public String path = "";
-        public String filename = "";
-        //public Boolean projects = false;
-        public Boolean alarms = false;
-        public Boolean antennas = false;
-        public Boolean fixedpoints = false;
-        public Boolean instruments = false;
-        public Boolean rods = false;
+        private String username = "";
+        private String password = "";
+        private String host = "";
+        private String path = "";
+        private String filename = "";
+
+        private Boolean alarms = false;
+        private Boolean antennas = false;
+        private Boolean fixedpoints = false;
+        private Boolean instruments = false;
+        private Boolean rods = false;
+
+        private int reply;
+        int duration = Toast.LENGTH_SHORT;
 
         @Override
         protected void onPreExecute() {
@@ -63,23 +68,26 @@ public class UpdateActivity extends AppCompatActivity{
             rods = prefs.getBoolean("switch_preference_bars",false);
 
             //Just testing...
-            CharSequence text = "onPreExecute executes!";
-            int duration = Toast.LENGTH_SHORT;
+            CharSequence text = "Attempting to synchronize.";
+            //int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(mContext, text, duration);
             toast.show();
         }
 
         @Override
-        protected Boolean doInBackground(Context... params) {
+        protected CharSequence doInBackground(Context... params) {
             DataBaseHandler db = DataBaseHandler.getInstance(mContext);
-
             try {
                 // New instance of FTPClient
                 FTPClient ftpClient = new FTPClient();
 
                 //Connect to server
                 ftpClient.connect(InetAddress.getByName(host));
-
+                reply = ftpClient.getReplyCode();
+                if(!FTPReply.isPositiveCompletion(reply)) {
+                    ftpClient.disconnect();
+                    return "FTP server refused connection.";
+                }
                 Log.i("FTP","Successfully connected to server");
                 Log.i("FTP",ftpClient.getReplyString());
                 //Login
@@ -246,14 +254,52 @@ public class UpdateActivity extends AppCompatActivity{
                     inputStream.close();
                     ftpClient.completePendingCommand();
                 }
+                Log.i("Instruments",Boolean.toString(instruments));
+                if (instruments) {
+                    filename = "instruments.csv";
+                    // Retrieve file as inputstream
+                    InputStream inputStream = ftpClient.retrieveFileStream(filename);
+                    Log.i("FTP", ftpClient.getReplyString());
 
-                ftpClient.logout();
+                    if (inputStream != null) {
+                        // If there is a file, delete old entries in database.
+                        db.deleteInstrumentTable();
+
+                        // Turn inputstream into a bufferedReader
+                        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+
+                        String line = "";
+                        // While there are lines to read
+                        while ((line = br.readLine()) != null) {
+                            String[] str = line.split(",");
+                            Log.i("Instruments", str[1]); // testing
+
+                            //Transform TODO: Quality check of data.
+                            int instrument_id = Integer.parseInt(str[0]);
+                            String instrument_name = str[1];
+
+                            InstrumentEntry tempInstrument = new InstrumentEntry(instrument_id, instrument_name);
+
+                            //Load entry into database.
+                            db.addInstrumentEntry(tempInstrument);
+
+                        }
+                        br.close();
+                    }
+
+                    inputStream.close();
+                    ftpClient.completePendingCommand();
+                }
+
+
+                    ftpClient.logout();
                 ftpClient.disconnect();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                return "Something bad happened";
+                //throw new RuntimeException(e);
             }
-
-            return true;
+            String result = "Synchronization successful.";
+            return result;
         }
         @Override
         protected void onProgressUpdate(Integer... values) {
@@ -261,10 +307,10 @@ public class UpdateActivity extends AppCompatActivity{
             //setProgressPercent(progress[0]);
         }
         @Override
-        protected void onPostExecute(Boolean result) {
-            CharSequence text = "onPostExecute executes!";
+        protected void onPostExecute(CharSequence result) {
+            //CharSequence text = "onPostExecute executes!";
             int duration = Toast.LENGTH_SHORT;
-            Toast toast = Toast.makeText(mContext, text, duration);
+            Toast toast = Toast.makeText(mContext, result, duration);
             toast.show();
             // TODO: Find a way to end the UpdateActivity when AsyncTask is finished.
         }
