@@ -39,6 +39,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 	// Antennae column names
 	private static final String KEY_ANT_ID 			= "id";
 	private static final String KEY_ANT_NAME		= "antenna_name";
+    private static final String KEY_ANT_CODE		= "antenna_code";
 
     // Alarms column names
     private static final String KEY_ALRM_ID 		= "id";
@@ -86,7 +87,8 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     	
     	String CREATE_ANTENNAE_TABLE = "CREATE TABLE " + TABLE_ANTENNAE + "("
                 + KEY_ANT_ID        + " INTEGER PRIMARY KEY,"
-        		+ KEY_ANT_NAME      + " TEXT unique)";
+        		+ KEY_ANT_NAME      + " TEXT,"
+                + KEY_ANT_CODE      + " TEXT)";
         db.execSQL(CREATE_ANTENNAE_TABLE);
 
         String CREATE_ALARMS_TABLE = "CREATE TABLE " + TABLE_ALARMS + "("
@@ -214,6 +216,12 @@ public class DataBaseHandler extends SQLiteOpenHelper {
                 new String[] {String.valueOf(alarmEntry.getID())});
         db.close();
     }
+    public void deleteAlarmTable() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.delete(TABLE_ALARMS, null ,null);
+        db.close();
+    }
 
 
     // ANTENNAE
@@ -225,6 +233,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(KEY_ANT_ID, antennaEntry.getID());  // Antenna ID
         values.put(KEY_ANT_NAME, antennaEntry.getName());
+        values.put(KEY_ANT_CODE, antennaEntry.getCode());
 
         // Insert row
         db.insert(TABLE_ANTENNAE, null, values);
@@ -235,14 +244,15 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     public AntennaEntry getAntennaEntry(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(TABLE_ANTENNAE, new String[] { KEY_ANT_ID, KEY_ANT_NAME},
+        Cursor cursor = db.query(TABLE_ANTENNAE, new String[] { KEY_ANT_ID, KEY_ANT_NAME,
+                        KEY_ANT_CODE},
                 KEY_ANT_ID + "=?", new String[] { String.valueOf(id) },
                 null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
 
         AntennaEntry antennaEntry = new AntennaEntry(Integer.parseInt(cursor.getString(0)),
-                cursor.getString(1));
+                cursor.getString(1),cursor.getString(2));
         // Return Antenna entry
         return antennaEntry;
     }
@@ -259,7 +269,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 AntennaEntry antennaEntry = new AntennaEntry(Integer.parseInt(cursor.getString(0)),
-                        cursor.getString(1));
+                        cursor.getString(1),cursor.getString(2));
                 //antennaEntry.setID(Integer.parseInt(cursor.getString(0)));
                 //antennaEntry.setName(cursor.getString(1));
                 // Add antenna to list
@@ -298,6 +308,12 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_ANTENNAE, KEY_ANT_ID + " = ? ",
                 new String[] {String.valueOf(antennaEntry.getID())});
+        db.close();
+    }
+    public void deleteAntennaTable() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.delete(TABLE_ANTENNAE, null ,null);
         db.close();
     }
 
@@ -386,6 +402,12 @@ public class DataBaseHandler extends SQLiteOpenHelper {
                 new String[] {String.valueOf(instrumentEntry.getID())});
         db.close();
     }
+    public void deleteInstrumentTable() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.delete(TABLE_INSTRUMENTS, null ,null);
+        db.close();
+    }
 
     // RODS
     void addRodEntry(RodEntry rodEntry) {
@@ -471,6 +493,14 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_RODS, KEY_ROD_ID + " = ? ",
                 new String[] {String.valueOf(rodEntry.getID())});
+        db.close();
+    }
+
+    // Delete all rods
+    public void deleteRodTable() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.delete(TABLE_RODS, null ,null);
         db.close();
     }
     //Fixedpoints
@@ -572,6 +602,12 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_FIXEDPOINTS, KEY_FP_ID + " = ? ",
                 new String[] {String.valueOf(fixedpointEntry.getID())});
+        db.close();
+    }
+    public void deleteFixedpointTable() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.delete(TABLE_FIXEDPOINTS, null ,null);
         db.close();
     }
 

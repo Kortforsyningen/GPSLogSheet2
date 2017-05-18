@@ -29,6 +29,10 @@
             android:defaultValue="false"
             android:title="@string/settings_antennas"
             android:key="switch_preference_antennas" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:title="@string/settings_alarms"
+            android:key="switch_preference_alarms" />
     </PreferenceCategory>
     <PreferenceCategory android:title="When to synchronize">
 

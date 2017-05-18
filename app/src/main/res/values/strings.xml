@@ -81,6 +81,7 @@
     <string name="settings_bars">Bar Lengths</string>
     <string name="settings_antennas">Antennae</string>
     <string name="settings_projects">Projects</string>
+    <string name="settings_alarms">Alarms</string>
     <string name="pref_header_credentials">Credentials</string>
     <string name="settings_instruments">Instruments</string>
     <string name="updateActivityTitle">Updating...</string>

@@ -43,25 +43,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
      */
-//    public Context baseContext;
-//    private static DataSyncListener dataSyncListener;
-
-//    private class DataSyncListener implements Preference.OnPreferenceClickListener {
-//
-//        @Override
-//        public boolean onPreferenceClick(Preference preference) {
-//            //USE mContext as the context object here
-//            String key = preference.getKey();
-//            if (key.equals("syncNow")) {
-//                //SyncDataFTP session = new SyncDataFTP(baseContext);
-//                int duration = Toast.LENGTH_SHORT;
-//                Toast toast = Toast.makeText(baseContext, "huh!", duration);
-//                toast.show();
-//                session.execute();
-//            }
-//            return false;
-//        }
-//    }
 
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
@@ -133,9 +114,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         // Set the listener to watch for value changes.
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
-//        //Add click listener OLDJO
-//        preference.setOnPreferenceClickListener(DataSyncListener);
-
         // Trigger the listener immediately with the preference's
         // current value.
         sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
@@ -148,9 +126,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
-//        baseContext = getBaseContext();
-//        dataSyncListener = new DataSyncListener();
-
     }
 
     /**
