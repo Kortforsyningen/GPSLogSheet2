@@ -9,6 +9,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,14 +25,29 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 	 
     // Database Name
     private static final String DATABASE_NAME = "GPSLogSheet2.db";
- 
+
     // Table names
+    private static final String TABLE_PROJECTS      = "projects";
+    private static final String TABLE_IMAGES        = "images";
     private static final String TABLE_INSTRUMENTS	= "instruments";
 	private static final String TABLE_ANTENNAE		= "antennae";
     private static final String TABLE_ALARMS		= "alarms";
 	private static final String TABLE_RODS			= "rods";
     private static final String TABLE_FIXEDPOINTS 	= "fixedpoints";
 	private static final String TABLE_SETTINGS		= "settings";
+
+    // Projects column names
+    private static final String KEY_PROJ_ID         = "id";
+    private static final String KEY_PROJ_NAME       = "name";
+    private static final String KEY_PROJ_DATE_START = "date_start";
+    private static final String KEY_PROJ_DATE_MOD   = "date_modified";
+    private static final String KEY_PROJ_CLOB       = "clob";
+
+    // Images column names
+    private static final String KEY_IMG_ID         = "id";
+    private static final String KEY_IMG_PROJ       = "project_id";
+    private static final String KEY_IMG_DATE_START = "date_start";
+    private static final String KEY_IMG_BLOB       = "blob";
 
     // Instruments column names
     private static final String KEY_INST_ID 		= "id";
@@ -80,6 +97,21 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     // Creating tables
 	@Override
     public void onCreate(SQLiteDatabase db) {
+        String CREATE_PROJECTS_TABLE = "CREATE TABLE " + TABLE_PROJECTS + "("
+                + KEY_PROJ_ID       + " INTEGER PRIMARY KEY,"
+                + KEY_PROJ_NAME     + " TEXT,"
+                + KEY_PROJ_DATE_START + "INTEGER,"
+                + KEY_PROJ_DATE_MOD + "INTEGER,"
+                + KEY_PROJ_CLOB + "CLOB)";
+        db.execSQL(CREATE_PROJECTS_TABLE);
+
+        String CREATE_IMAGES_TABLE = "CREATE TABLE " + TABLE_PROJECTS + "("
+                + KEY_IMG_ID       + " INTEGER PRIMARY KEY,"
+                + KEY_IMG_DATE_START + "INTEGER,"
+                + KEY_IMG_PROJ + "INTEGER,"
+                + KEY_IMG_BLOB + "BLOB)";
+        db.execSQL(CREATE_IMAGES_TABLE);
+
         String CREATE_INSTRUMENTS_TABLE = "CREATE TABLE " + TABLE_INSTRUMENTS + "("
                 + KEY_INST_ID       + " INTEGER PRIMARY KEY,"
                 + KEY_INST_NAME     + " TEXT)";
@@ -121,6 +153,8 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older table if existed
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PROJECTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_IMAGES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_INSTRUMENTS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_ANTENNAE);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_ALARMS);
@@ -132,6 +166,97 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     }
 
     // CRUD (create, read, update, delete) operations
+
+    //Projects
+    void addProjectEntry(ProjectEntry projectEntry) {
+        // Open database
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_PROJ_ID, projectEntry.getId());  // Alarm ID
+        values.put(KEY_PROJ_NAME, projectEntry.getName());
+        values.put(KEY_PROJ_DATE_START, projectEntry.getStartDate());
+        values.put(KEY_PROJ_DATE_MOD, projectEntry.getModDate());
+        values.put(KEY_PROJ_CLOB, projectEntry.getJsonString());
+
+        // Insert row
+        db.insert(TABLE_PROJECTS, null, values);
+        // Close database
+        db.close();
+    }
+
+    public ProjectEntry getProjectEntry(int id) {
+        String json;
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(TABLE_PROJECTS, new String[] { KEY_PROJ_ID, KEY_PROJ_CLOB },
+                KEY_PROJ_ID + "=?", new String[] { String.valueOf(id) },
+                null, null, null, null);
+        if (cursor != null)
+            cursor.moveToFirst();
+
+        Gson gson = new Gson();
+        //ProjectEntry projectEntry = gson.fromJson(cursor.getString(1), ProjectEntry.class);
+        // Return Project entry
+        return gson.fromJson(cursor.getString(1), ProjectEntry.class);
+    }
+
+    // Get list of all projects
+    public List<ProjectEntry> getAllProjectEntries() {
+        List<ProjectEntry> projectList = new ArrayList<ProjectEntry>();
+        // Select all query
+        String selectQuery = "SELECT  * FROM " + TABLE_PROJECTS;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                ProjectEntry projectEntry = getProjectEntry(Integer.parseInt(cursor.getString(0)));
+                // Add project to list
+                projectList.add(projectEntry);
+            } while (cursor.moveToNext());
+        }
+        return projectList;
+    }
+
+    // Get number of projects in db
+    public int getProjectsCount() {
+        String countQuery = "SELECT * FROM " + TABLE_PROJECTS;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, null);
+        int count = cursor.getCount();
+        cursor.close();
+
+        // return count
+        return count;
+    }
+
+    // Update project TODO: currently only changes name
+    public int updateProjectEntry(ProjectEntry projectEntry) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_PROJ_NAME, projectEntry.getName());
+
+        // updating row
+        return db.update(TABLE_PROJECTS, values, KEY_PROJ_ID + " = ?",
+                new String[]{String.valueOf(projectEntry.getId())});
+    }
+
+    // Delete project
+    public void deleteProject(ProjectEntry projectEntry) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_PROJECTS, KEY_PROJ_ID + " = ? ",
+                new String[] {String.valueOf(projectEntry.getId())});
+        db.close();
+    }
+    public void deleteProjectTable() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.delete(TABLE_PROJECTS, null ,null);
+        db.close();
+    }
 
     //Alarms
     void addAlarmEntry(AlarmEntry alarmEntry) {
@@ -157,10 +282,10 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         if (cursor != null)
             cursor.moveToFirst();
 
-        AlarmEntry alarmEntry = new AlarmEntry(Integer.parseInt(cursor.getString(0)),
-                cursor.getString(1));
+        //AlarmEntry alarmEntry = new AlarmEntry(Integer.parseInt(cursor.getString(0)),
+        //        cursor.getString(1));
         // Return Alarm entry
-        return alarmEntry;
+        return new AlarmEntry(Integer.parseInt(cursor.getString(0)),cursor.getString(1));
     }
 
     // Get list of all alarms

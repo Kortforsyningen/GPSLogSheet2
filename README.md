@@ -38,25 +38,29 @@ Current progress:
 - [x] Initial layout
 - [x] Create SQLite database
 - [x] Settings activity
-- [ ] Interface with the server
+- [x] Interface with the server
 - [ ] Create ETL (Extract, Transform, Load) functions
 - [ ] Ability to save projects
 - [ ] Ability to load projects
 - [ ] Generation of .bat scripts
 - [ ] Upload of projects to server
 - [ ] Camera integration
-- [ ] GPS integraton
+- [ ] GPS integration
 - [ ] Upload of projects (with pictures) to server
 - [ ] GUI reevaluation and optimization
 - [ ] (Support for other postprocessing tool than TEQC)
 
 Target Android SDK is 25 and min SDK is 22.
 
-This app uses SQLite to handle its data. FTP (SFTP) for connectivity. GPS and the camera for ease of use and datacollection.
+This app uses SQLite to handle its data. FTP (SFTP) for connectivity. GPS and the camera for ease of use and data collection.
+
+Projects are JSON (JavaScript Object Notation) objects and converted into strings and saved in the database as CLOBs (Character Large Object).
+
+Images taken with the camera are also saved in the database, as BLOBs (Binary Large Object)
 
 AppCompatPreferenceActivity is used for user preferences, such as username, passwords, update preferences etc.
 
-Settings files on the server are stored as comma seperated values, in seperate files for each table.
+Settings files on the server are stored as comma separated values, in separate files for each table.
 
 ## Android udvikling på SIA’s PC’er
 For at kunne køre Android Studio samt virtuelle Android enheder direkte fra Windows kræves følgende:
