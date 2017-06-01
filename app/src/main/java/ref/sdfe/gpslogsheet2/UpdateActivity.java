@@ -47,7 +47,6 @@ public class UpdateActivity extends AppCompatActivity{
         private Boolean instruments = false;
         private Boolean rods = false;
 
-        private int reply;
         int duration = Toast.LENGTH_SHORT;
 
         @Override
@@ -80,10 +79,16 @@ public class UpdateActivity extends AppCompatActivity{
             try {
                 // New instance of FTPClient
                 FTPClient ftpClient = new FTPClient();
+                ftpClient.setConnectTimeout(5000);
 
                 //Connect to server
-                ftpClient.connect(InetAddress.getByName(host));
-                reply = ftpClient.getReplyCode();
+                try {
+                    ftpClient.connect(InetAddress.getByName(host));
+                }
+                catch (IOException e) {
+                    return "FTP timed out, please check host name and connection";
+                }
+                int reply = ftpClient.getReplyCode();
                 if(!FTPReply.isPositiveCompletion(reply)) {
                     ftpClient.disconnect();
                     return "FTP server refused connection.";
