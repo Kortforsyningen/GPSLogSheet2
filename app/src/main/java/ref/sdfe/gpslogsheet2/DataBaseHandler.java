@@ -105,7 +105,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
                 + KEY_PROJ_CLOB + "CLOB)";
         db.execSQL(CREATE_PROJECTS_TABLE);
 
-        String CREATE_IMAGES_TABLE = "CREATE TABLE " + TABLE_PROJECTS + "("
+        String CREATE_IMAGES_TABLE = "CREATE TABLE " + TABLE_IMAGES + "("
                 + KEY_IMG_ID       + " INTEGER PRIMARY KEY,"
                 + KEY_IMG_DATE_START + "INTEGER,"
                 + KEY_IMG_PROJ + "INTEGER,"

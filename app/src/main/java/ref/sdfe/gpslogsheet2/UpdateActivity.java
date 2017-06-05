@@ -1,6 +1,5 @@
 package ref.sdfe.gpslogsheet2;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -41,6 +40,7 @@ public class UpdateActivity extends AppCompatActivity{
         private String path = "";
         private String filename = "";
 
+        private Boolean projects = false;
         private Boolean alarms = false;
         private Boolean antennas = false;
         private Boolean fixedpoints = false;
@@ -66,260 +66,296 @@ public class UpdateActivity extends AppCompatActivity{
             fixedpoints = prefs.getBoolean("switch_preference_points",false);
             instruments = prefs.getBoolean("switch_preference_instruments",false);
             rods = prefs.getBoolean("switch_preference_bars",false);
-
-            //Just testing...
-            CharSequence text = "Attempting to synchronize.";
-            //int duration = Toast.LENGTH_SHORT;
-            Toast toast = Toast.makeText(mContext, text, duration);
-            toast.show();
         }
 
         @Override
         protected CharSequence doInBackground(Context... params) {
-            DataBaseHandler db = DataBaseHandler.getInstance(mContext);
-            try {
-                // New instance of FTPClient
-                FTPClient ftpClient = new FTPClient();
-                ftpClient.setConnectTimeout(5000);
+            // Check if anything is supposed to be updated at all:
+            if (projects || alarms || antennas || fixedpoints || instruments || rods) {
 
-                //Connect to server
+                DataBaseHandler db = DataBaseHandler.getInstance(mContext);
                 try {
-                    ftpClient.connect(InetAddress.getByName(host));
-                }
-                catch(IOException e){
-                    return "FTP timed out, please check host address and internet connection.";
-                }
+                    // New instance of FTPClient
+                    FTPClient ftpClient = new FTPClient();
+                    ftpClient.setConnectTimeout(5000);
 
-                reply = ftpClient.getReplyCode();
-                if(!FTPReply.isPositiveCompletion(reply)) {
-                    ftpClient.disconnect();
-                    return "FTP server refused connection.";
-                }
-                Log.i("FTP","Successfully connected to server");
-                Log.i("FTP",ftpClient.getReplyString());
-                //Login
-                ftpClient.login(username, password);
-                Log.i("FTP","Successfully logged in.");
-                Log.i("FTP",ftpClient.getReplyString());
-                //Change path
-                ftpClient.changeWorkingDirectory(path);
-                Log.i("FTP",ftpClient.getReplyString());
-                ftpClient.changeWorkingDirectory("settings");
-                Log.i("FTP",ftpClient.getReplyString());
-
-                // Enter Passive Mode
-                ftpClient.enterLocalPassiveMode();
-                if (alarms) {
-                    filename = "alarms.csv";
-                    // Retrieve file as inputstream
-                    InputStream inputStream = ftpClient.retrieveFileStream(filename);
-                    Log.i("FTP", ftpClient.getReplyString());
-
-                    if (inputStream != null) {
-                        // If there is a file, delete old entries in database.
-                        db.deleteAlarmTable();
-
-                        // Turn inputstream into a bufferedReader
-                        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-
-                        String line = "";
-                        // While there are lines to read
-                        while ((line = br.readLine()) != null) {
-                            String[] str = line.split(",");
-                            Log.i("Alarms", str[1]); // testing
-
-                            //Transform TODO: Quality check of data.
-                            int alarm_id = Integer.parseInt(str[0]);
-                            String alarm_name = str[1];
-
-                            AlarmEntry tempAlarm = new AlarmEntry(alarm_id, alarm_name);
-
-                            //Load entry into database.
-                            db.addAlarmEntry(tempAlarm);
-
-                        }
-                        br.close();
-                    }
-
-                    inputStream.close();
-                    ftpClient.completePendingCommand();
-                }
-                // Antennas!
-                if (antennas) {
-                    filename = "antennas.csv";
-                    // Retrieve file as inputstream
-                    InputStream inputStream = ftpClient.retrieveFileStream(filename);
-                    Log.i("FTP", ftpClient.getReplyString());
-
-                    if (inputStream != null) {
-                        // If there is a file, delete old entries in database.
-                        db.deleteAntennaTable();
-
-                        // Turn inputstream into a bufferedReader
-                        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-
-                        String line = "";
-                        // While there are lines to read
-                        while ((line = br.readLine()) != null) {
-                            String[] str = line.split(",");
-                            Log.i("Antenna", str[1]); // testing
-
-                            //Transform TODO: Quality check of data.
-                            int antenna_id = Integer.parseInt(str[0]);
-                            String antenna_name = str[1];
-                            String antenna_code = str[2];
-
-                            AntennaEntry tempAntenna = new AntennaEntry(antenna_id, antenna_name,
-                                    antenna_code);
-
-                            //Load entry into database.
-                            db.addAntennaEntry(tempAntenna);
-
-                        }
-                        br.close();
-                    }
-
-                    inputStream.close();
-                    ftpClient.completePendingCommand();
-                }
-
-                // Update fixedpoints
-                if (fixedpoints) {
-                    filename = "fixedpoints.csv";
-                    // Retrieve file as inputstream
-                    InputStream inputStream = ftpClient.retrieveFileStream(filename);
-                    Log.i("FTP", ftpClient.getReplyString());
-
-                    if (inputStream != null) {
-                        // If there is a file, delete old entries in database.
-                        db.deleteFixedpointTable();
-
-                        // Turn inputstream into a bufferedReader
-                        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-
-                        int id = 0;
-                        String line = "";
-                        // While there are lines to read
-                        while ((line = br.readLine()) != null) {
-                            String[] str = line.split(",");
-                            Log.i("Fixedpoints", str[0]); // testing
-
-                            //Transform TODO: Quality check of data.
-
-                            String gps_name = str[0];
-                            String hs_name = str[1];
-                            Double x = Double.parseDouble(str[2]);
-                            Double y = Double.parseDouble(str[3]);
-
-                            FixedpointEntry tempPoint = new FixedpointEntry(++id, gps_name, hs_name, x, y);
-
-                            //Load entry into database.
-                            db.addFixedpointEntry(tempPoint);
-
-                        }
-                        br.close();
-                    }
-
-                    inputStream.close();
-                    ftpClient.completePendingCommand();
-                }
-
-                Log.i("Rods",Boolean.toString(rods));
-                if (rods) {
-                    filename = "rods.csv";
-                    InputStream inputStream = null;
-                    // Retrieve file as inputstream
+                    //Connect to server
                     try {
-                        inputStream = ftpClient.retrieveFileStream(filename);
-                    }
-                    catch(IOException e){
-                       return "File not found";
+                        ftpClient.connect(InetAddress.getByName(host));
+                    } catch (IOException e) {
+                        return "FTP timed out, please check host address and internet connection.";
                     }
 
+                    reply = ftpClient.getReplyCode();
+                    if (!FTPReply.isPositiveCompletion(reply)) {
+                        ftpClient.disconnect();
+                        return "FTP server refused connection.";
+                    }
                     Log.i("FTP", ftpClient.getReplyString());
 
-                    if (inputStream != null) {
-                        // If there is a file, delete old entries in database.
-                        db.deleteRodTable();
-
-                        // Turn inputstream into a bufferedReader
-                        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-
-                        String line = "";
-                        // While there are lines to read
-                        while ((line = br.readLine()) != null) {
-                            String[] str = line.split(",");
-                            Log.i("Rods", str[1]); // testing
-
-                            //Transform TODO: Quality check of data.
-                            int rod_id = Integer.parseInt(str[0]);
-                            String rod_name = str[1];
-                            Double rod_length = Double.parseDouble(str[2]);
-
-                            RodEntry tempRod = new RodEntry(rod_id, rod_name, rod_length);
-
-                            //Load entry into database.
-                            db.addRodEntry(tempRod);
-
-                        }
-                        br.close();
-                    }else{
-                        return "Could not load 'rods.csv'.";
+                    //Login
+                    ftpClient.login(username, password);
+                    reply = ftpClient.getReplyCode();
+                    if (!FTPReply.isPositiveCompletion(reply)) {
+                        ftpClient.disconnect();
+                        return "Login Failed. Check username/password.";
                     }
-                    try{
-                        inputStream.close();
-                    }catch(NullPointerException e){
-                        return "File error.";
-                    }finally{
+
+                    //Change path
+                    ftpClient.changeWorkingDirectory(path);
+                    Log.i("FTP", ftpClient.getReplyString());
+                    reply = ftpClient.getReplyCode();
+                    if (FTPReply.isNegativePermanent(reply)) {
+                        ftpClient.disconnect();
+                        return "Check Path setting.";
+                    }
+                    //Change path to settings directory
+                    ftpClient.changeWorkingDirectory("settings");
+                    Log.i("FTP", ftpClient.getReplyString());
+                    reply = ftpClient.getReplyCode();
+                    if (FTPReply.isNegativePermanent(reply)) {
+                        ftpClient.disconnect();
+                        return "Path is missing a settings directory.";
+                    }
+
+                    // Enter Passive Mode
+                    ftpClient.enterLocalPassiveMode();
+                    if (alarms) {
+                        filename = "alarms.csv";
+                        // Retrieve file as inputstream
+                        InputStream inputStream = ftpClient.retrieveFileStream(filename);
+                        Log.i("FTP", ftpClient.getReplyString());
+
+                        reply = ftpClient.getReplyCode();
+                        if (!FTPReply.isPositivePreliminary(reply)) {
+                            ftpClient.disconnect();
+                            return filename + " not found in settings directory.";
+                        }
+
+                        if (inputStream != null) {
+                            // If there is a file, delete old entries in database.
+                            db.deleteAlarmTable();
+
+                            // Turn inputstream into a bufferedReader
+                            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+
+                            String line = "";
+                            // While there are lines to read
+                            while ((line = br.readLine()) != null) {
+                                String[] str = line.split(",");
+                                Log.i("Alarms", str[1]); // testing
+
+                                //Transform TODO: Quality check of data.
+                                int alarm_id = Integer.parseInt(str[0]);
+                                String alarm_name = str[1];
+
+                                AlarmEntry tempAlarm = new AlarmEntry(alarm_id, alarm_name);
+
+                                //Load entry into database.
+                                db.addAlarmEntry(tempAlarm);
+
+                            }
+                            br.close();
+                            inputStream.close();
+                        }
+
                         ftpClient.completePendingCommand();
                     }
-                }
-                Log.i("Instruments",Boolean.toString(instruments));
-                if (instruments) {
-                    filename = "instruments.csv";
-                    // Retrieve file as inputstream
-                    InputStream inputStream = ftpClient.retrieveFileStream(filename);
-                    Log.i("FTP", ftpClient.getReplyString());
+                    // Antennas!
+                    if (antennas) {
+                        filename = "antennas.csv";
+                        // Retrieve file as inputstream
+                        InputStream inputStream = ftpClient.retrieveFileStream(filename);
+                        Log.i("FTP", ftpClient.getReplyString());
 
-                    if (inputStream != null) {
-                        // If there is a file, delete old entries in database.
-                        db.deleteInstrumentTable();
-
-                        // Turn inputstream into a bufferedReader
-                        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-
-                        String line = "";
-                        // While there are lines to read
-                        while ((line = br.readLine()) != null) {
-                            String[] str = line.split(",");
-                            Log.i("Instruments", str[1]); // testing
-
-                            //Transform TODO: Quality check of data.
-                            int instrument_id = Integer.parseInt(str[0]);
-                            String instrument_name = str[1];
-
-                            InstrumentEntry tempInstrument = new InstrumentEntry(instrument_id, instrument_name);
-
-                            //Load entry into database.
-                            db.addInstrumentEntry(tempInstrument);
-
+                        reply = ftpClient.getReplyCode();
+                        if (!FTPReply.isPositivePreliminary(reply)) {
+                            ftpClient.disconnect();
+                            return filename + " not found in settings directory.";
                         }
-                        br.close();
+
+                        if (inputStream != null) {
+                            // If there is a file, delete old entries in database.
+                            db.deleteAntennaTable();
+
+                            // Turn inputstream into a bufferedReader
+                            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+
+                            String line = "";
+                            // While there are lines to read
+                            while ((line = br.readLine()) != null) {
+                                String[] str = line.split(",");
+                                Log.i("Antenna", str[1]); // testing
+
+                                //Transform TODO: Quality check of data.
+                                int antenna_id = Integer.parseInt(str[0]);
+                                String antenna_name = str[1];
+                                String antenna_code = str[2];
+
+                                AntennaEntry tempAntenna = new AntennaEntry(antenna_id, antenna_name,
+                                        antenna_code);
+
+                                //Load entry into database.
+                                db.addAntennaEntry(tempAntenna);
+
+                            }
+                            br.close();
+                            inputStream.close();
+                        }
+
+                        ftpClient.completePendingCommand();
                     }
 
-                    inputStream.close();
-                    ftpClient.completePendingCommand();
-                }
+                    // Update fixedpoints
+                    if (fixedpoints) {
+                        filename = "fixedpoints.csv";
+                        // Retrieve file as inputstream
+                        InputStream inputStream = ftpClient.retrieveFileStream(filename);
+                        Log.i("FTP", ftpClient.getReplyString());
+
+                        reply = ftpClient.getReplyCode();
+                        if (!FTPReply.isPositivePreliminary(reply)) {
+                            ftpClient.disconnect();
+                            return filename + " not found in settings directory.";
+                        }
+
+                        if (inputStream != null) {
+                            // If there is a file, delete old entries in database.
+                            db.deleteFixedpointTable();
+
+                            // Turn inputstream into a bufferedReader
+                            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+
+                            int id = 0;
+                            String line = "";
+                            // While there are lines to read
+                            while ((line = br.readLine()) != null) {
+                                String[] str = line.split(",");
+                                Log.i("Fixedpoints", str[0]); // testing
+
+                                //Transform TODO: Quality check of data.
+
+                                String gps_name = str[0];
+                                String hs_name = str[1];
+                                Double x = Double.parseDouble(str[2]);
+                                Double y = Double.parseDouble(str[3]);
+
+                                FixedpointEntry tempPoint = new FixedpointEntry(++id, gps_name, hs_name, x, y);
+
+                                //Load entry into database.
+                                db.addFixedpointEntry(tempPoint);
+
+                            }
+                            br.close();
+                            inputStream.close();
+                        }
+
+                        ftpClient.completePendingCommand();
+                    }
+
+
+                    // Rods
+                    Log.i("Rods", Boolean.toString(rods));
+                    if (rods) {
+                        filename = "rods.csv";
+                        InputStream inputStream = null;
+                        // Retrieve file as inputstream
+                        inputStream = ftpClient.retrieveFileStream(filename);
+                        Log.i("FTP", ftpClient.getReplyString());
+
+                        reply = ftpClient.getReplyCode();
+                        if (!FTPReply.isPositivePreliminary(reply)) {
+                            ftpClient.disconnect();
+                            return filename + " not found in settings directory.";
+                        }
+
+                        if (inputStream != null) {
+                            // If there is a file, delete old entries in database.
+                            db.deleteRodTable();
+
+                            // Turn inputstream into a bufferedReader
+                            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+
+                            String line = "";
+                            // While there are lines to read
+                            while ((line = br.readLine()) != null) {
+                                String[] str = line.split(",");
+                                Log.i("Rods", str[1]); // testing
+
+                                //Transform TODO: Quality check of data.
+                                int rod_id = Integer.parseInt(str[0]);
+                                String rod_name = str[1];
+                                Double rod_length = Double.parseDouble(str[2]);
+
+                                RodEntry tempRod = new RodEntry(rod_id, rod_name, rod_length);
+
+                                //Load entry into database.
+                                db.addRodEntry(tempRod);
+
+                            }
+                            br.close();
+                            inputStream.close();
+                        }
+                        ftpClient.completePendingCommand();
+                    }
+
+                    //Instruments
+                    Log.i("Instruments", Boolean.toString(instruments));
+                    if (instruments) {
+                        filename = "instruments.csv";
+                        // Retrieve file as inputstream
+                        InputStream inputStream = ftpClient.retrieveFileStream(filename);
+                        Log.i("FTP", ftpClient.getReplyString());
+
+                        reply = ftpClient.getReplyCode();
+                        if (!FTPReply.isPositivePreliminary(reply)) {
+                            ftpClient.disconnect();
+                            return filename + " not found in settings directory.";
+                        }
+
+                        if (inputStream != null) {
+                            // If there is a file, delete old entries in database.
+                            db.deleteInstrumentTable();
+
+                            // Turn inputstream into a bufferedReader
+                            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+
+                            String line = "";
+                            // While there are lines to read
+                            while ((line = br.readLine()) != null) {
+                                String[] str = line.split(",");
+                                Log.i("Instruments", str[1]); // testing
+
+                                //Transform TODO: Quality check of data.
+                                int instrument_id = Integer.parseInt(str[0]);
+                                String instrument_name = str[1];
+
+                                InstrumentEntry tempInstrument = new InstrumentEntry(instrument_id, instrument_name);
+
+                                //Load entry into database.
+                                db.addInstrumentEntry(tempInstrument);
+
+                            }
+                            br.close();
+                            inputStream.close();
+                        }
+
+                        ftpClient.completePendingCommand();
+                    }
 
 
                     ftpClient.logout();
-                ftpClient.disconnect();
-            } catch (IOException e) {
-                return "Something bad happened";
-                //throw new RuntimeException(e);
+                    ftpClient.disconnect();
+                } catch (IOException e) {
+                    return "Something bad happened";
+                    //throw new RuntimeException(e);
+                }
             }
-            String result = "Synchronization successful.";
-            return result;
+            else {
+                return "Choose what to update.";
+            }
+
+            return "Synchronization successful.";
         }
         @Override
         protected void onProgressUpdate(Integer... values) {
@@ -332,7 +368,6 @@ public class UpdateActivity extends AppCompatActivity{
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(mContext, result, duration);
             toast.show();
-            // TODO: Find a way to end the UpdateActivity when AsyncTask is finished.
         }
     }
 }
