@@ -38,6 +38,7 @@
 
     </PreferenceCategory>
     <ListPreference
+        android:enabled="false"
         android:defaultValue="-1"
         android:entries="@array/pref_sync_frequency_titles"
         android:entryValues="@array/pref_sync_frequency_values"

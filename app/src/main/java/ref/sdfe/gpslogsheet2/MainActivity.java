@@ -16,6 +16,22 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        // Test zone:
+        ProjectEntry projectEntry = new ProjectEntry(1);
+
+        projectEntry.setName("Test Project");
+        projectEntry.setOperator("oldjo");
+        //projectEntry.
+
+        String pstring = projectEntry.getJsonString();
+        int duration = Toast.LENGTH_LONG;
+        Toast toast = Toast.makeText(this, pstring, duration);
+        toast.show();
+
+        // End of Test zone.
+
     }
     /** Called when the user clicks the settings button */
     public void openSettings(View view) {

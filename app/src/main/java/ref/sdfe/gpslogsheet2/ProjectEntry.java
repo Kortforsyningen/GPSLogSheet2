@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 
 /**
  * Created by B028406 on 01-06-2017.
@@ -17,6 +18,7 @@ class ProjectEntry {
     private int startDate;
     private int endDate;
     private int modDate;
+    private HashMap<Integer,Setup> setups; //HasMap to store setups
 
     public ProjectEntry(int id) {
         /*
@@ -62,9 +64,18 @@ class ProjectEntry {
         this.name = name;
     }
 
+    public void addSetup(Setup setup){
+        this.setups.put(setup.getId(), setup);
+    }
+
 
 
     class Setup{
+
+        public int getId() {
+            return id;
+        }
+
         private int id;
 
         public String getFixedPoint() {
@@ -195,6 +206,20 @@ class ProjectEntry {
 
         public Setup(int id) {
             this.id = id;
+        }
+        private HashMap<Integer,Observation> observations; //HashMap to store observations
+
+
+        public void addObservation(Observation observation){
+            this.observations.put(observation.getId(),observation);
+        }
+        public void deleteObservation(Integer id){
+            observations.remove(id);
+        }
+        public Integer[] getObservationIds(){
+            Integer[] ids=new Integer[observations.keySet().size()];
+            observations.keySet();
+            return ids;
         }
 
         class Observation{

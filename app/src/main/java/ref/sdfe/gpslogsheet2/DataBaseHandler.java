@@ -173,7 +173,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_PROJ_ID, projectEntry.getId());  // Alarm ID
+        values.put(KEY_PROJ_ID, projectEntry.getId());
         values.put(KEY_PROJ_NAME, projectEntry.getName());
         values.put(KEY_PROJ_DATE_START, projectEntry.getStartDate());
         values.put(KEY_PROJ_DATE_MOD, projectEntry.getModDate());
