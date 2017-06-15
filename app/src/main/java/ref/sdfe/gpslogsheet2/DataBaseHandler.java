@@ -8,6 +8,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.google.gson.Gson;
 
@@ -100,16 +101,17 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         String CREATE_PROJECTS_TABLE = "CREATE TABLE " + TABLE_PROJECTS + "("
                 + KEY_PROJ_ID       + " INTEGER PRIMARY KEY,"
                 + KEY_PROJ_NAME     + " TEXT,"
-                + KEY_PROJ_DATE_START + "INTEGER,"
-                + KEY_PROJ_DATE_MOD + "INTEGER,"
-                + KEY_PROJ_CLOB + "CLOB)";
+                + KEY_PROJ_DATE_START + " INTEGER,"
+                + KEY_PROJ_DATE_MOD + " INTEGER,"
+                + KEY_PROJ_CLOB + " CLOB)";
         db.execSQL(CREATE_PROJECTS_TABLE);
+        Log.i("SQL", "table created?");
 
         String CREATE_IMAGES_TABLE = "CREATE TABLE " + TABLE_IMAGES + "("
                 + KEY_IMG_ID       + " INTEGER PRIMARY KEY,"
-                + KEY_IMG_DATE_START + "INTEGER,"
-                + KEY_IMG_PROJ + "INTEGER,"
-                + KEY_IMG_BLOB + "BLOB)";
+                + KEY_IMG_DATE_START + " INTEGER,"
+                + KEY_IMG_PROJ + " INTEGER,"
+                + KEY_IMG_BLOB + " BLOB)";
         db.execSQL(CREATE_IMAGES_TABLE);
 
         String CREATE_INSTRUMENTS_TABLE = "CREATE TABLE " + TABLE_INSTRUMENTS + "("
@@ -186,7 +188,6 @@ public class DataBaseHandler extends SQLiteOpenHelper {
     }
 
     public ProjectEntry getProjectEntry(int id) {
-        String json;
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(TABLE_PROJECTS, new String[] { KEY_PROJ_ID, KEY_PROJ_CLOB },

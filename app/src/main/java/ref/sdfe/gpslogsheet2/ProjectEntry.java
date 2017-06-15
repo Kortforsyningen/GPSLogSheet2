@@ -26,6 +26,7 @@ class ProjectEntry {
         * */
         this.id = id;
         this.startDate = GregorianCalendar.DATE;
+        this.modDate = startDate;
     }
 
     public String getJsonString() {

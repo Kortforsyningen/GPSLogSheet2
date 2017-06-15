@@ -15,6 +15,10 @@
             android:key="switch_preference_projects" />
         <SwitchPreference
             android:defaultValue="false"
+            android:title="@string/settings_images"
+            android:key="switch_preference_images" />
+        <SwitchPreference
+            android:defaultValue="false"
             android:title="@string/settings_points"
             android:key="switch_preference_points" />
         <SwitchPreference
@@ -23,8 +27,8 @@
             android:key="switch_preference_instruments" />
         <SwitchPreference
             android:defaultValue="false"
-            android:title="@string/settings_bars"
-            android:key="switch_preference_bars" />
+            android:title="@string/settings_rods"
+            android:key="switch_preference_rods" />
         <SwitchPreference
             android:defaultValue="false"
             android:title="@string/settings_antennas"
@@ -47,9 +51,7 @@
         android:positiveButtonText="@null"
         android:title="@string/pref_title_sync_frequency" />
     <Preference android:title="@string/pref_title_system_sync_settings" android:key = "syncNow">
-        <!-- TODO: Make this trigger download latest settings from server -->
-        <!--<intent android:action="android.settings.SYNC_SETTINGS" />-->
-        <!--<intent android:action="dataSyncListener.onPreferenceClick(getPreference)"/>-->
+
         <intent
             android:action="android.intent.action.MAIN"
             android:targetPackage="ref.sdfe.gpslogsheet2"

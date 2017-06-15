@@ -41,6 +41,7 @@ public class UpdateActivity extends AppCompatActivity{
         private String filename = "";
 
         private Boolean projects = false;
+        private Boolean images = false;
         private Boolean alarms = false;
         private Boolean antennas = false;
         private Boolean fixedpoints = false;
@@ -66,6 +67,9 @@ public class UpdateActivity extends AppCompatActivity{
             fixedpoints = prefs.getBoolean("switch_preference_points",false);
             instruments = prefs.getBoolean("switch_preference_instruments",false);
             rods = prefs.getBoolean("switch_preference_bars",false);
+            projects = prefs.getBoolean("switch_preference_projects",false);
+            images = prefs.getBoolean("switch_preference_images",false);
+            projects = prefs.getBoolean("switch_preference_projects",false);
         }
 
         @Override
@@ -120,6 +124,11 @@ public class UpdateActivity extends AppCompatActivity{
 
                     // Enter Passive Mode
                     ftpClient.enterLocalPassiveMode();
+                    // !############!
+                    // !# SETTINGS #!
+                    // !############!
+
+                    // alarms!
                     if (alarms) {
                         filename = "alarms.csv";
                         // Retrieve file as inputstream
@@ -342,10 +351,54 @@ public class UpdateActivity extends AppCompatActivity{
 
                         ftpClient.completePendingCommand();
                     }
+                    // TODO: Projects!
+                    // TODO: change path
+                    if (projects) {
+                        // Projects will be saved as individual json files
 
+                        //Change path
+                        ftpClient.changeWorkingDirectory("/" + path + "/projects");
+                        Log.i("FTP", ftpClient.getReplyString());
+                        reply = ftpClient.getReplyCode();
+                        if (FTPReply.isNegativePermanent(reply)) {
+                            ftpClient.disconnect();
+                            return "Could not change into projects path.";
+                        }
+                        else{
+                            //TODO: Projects
+                            // Projects have unique names.
+                            // If a local project has the name as a project on the server, check
+                            // the date date created and date modified.
+                            // if date created EQUAL and date modified newer on server, then download
+                            // if date created NOT EQUAL, send a warning of conflict.
+                        }
+                    }
+
+                    // Images
+
+                    if (images) {
+                        //Change path
+                        ftpClient.changeWorkingDirectory("/" + path + "/images");
+                        Log.i("FTP", ftpClient.getReplyString());
+                        reply = ftpClient.getReplyCode();
+                        if (FTPReply.isNegativePermanent(reply)) {
+                            ftpClient.disconnect();
+                            return "Could not change into images path.";
+                        }
+                        else{
+                            //TODO: images
+                            //
+                            // Images will be saved as individual jpeg files
+                            // Naming scheme will be closest <fixedpoint name>-yyyy-mm-dd-hh-mm-ss.jpg
+                            // TODO: ask if this is a good naming scheme.
+                            // TODO: Check: does database save all this info? add this filename to database?
+                        }
+
+                    }
 
                     ftpClient.logout();
                     ftpClient.disconnect();
+                    return "Synchronization successful.";
                 } catch (IOException e) {
                     return "Something bad happened";
                     //throw new RuntimeException(e);
@@ -354,12 +407,10 @@ public class UpdateActivity extends AppCompatActivity{
             else {
                 return "Choose what to update.";
             }
-
-            return "Synchronization successful.";
         }
         @Override
         protected void onProgressUpdate(Integer... values) {
-            // TODO: Some clever way to show the progress.
+            // TODO: Low priority. Some clever way to show the progress.
             //setProgressPercent(progress[0]);
         }
         @Override

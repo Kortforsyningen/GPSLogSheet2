@@ -164,11 +164,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("sync_frequency"));
-            //dataSyncListener = new DataSyncListener()
-            //onPreferenceClick(findPreference("syncNow"));
-            //dataSyncListener.onPreferenceClick(findPreference("syncNow"));
-            //dataSyncListener.onPreferenceClick();
-
         }
 
         @Override

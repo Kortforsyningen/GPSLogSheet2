@@ -13,23 +13,33 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TODO: Design a proper main page." />
+        android:text="TODO: Design a proper main page."
+        android:id="@+id/textView5" />
 
     <Button
         android:text="@string/button_settings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
         android:id="@+id/settings_button"
-        android:onClick="openSettings" />
+        android:onClick="openSettings"
+        android:layout_below="@+id/project_button"
+        android:layout_alignParentStart="true" />
 
     <Button
         android:text="@string/button_project"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/settings_button"
-        android:layout_alignStart="@+id/settings_button"
         android:id="@+id/project_button"
-        android:onClick="openProject" />
+        android:onClick="newProject"
+        android:layout_below="@+id/open_button"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:text="@string/button_open"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/open_button"
+        android:onClick="openProject"
+        android:layout_below="@+id/textView5"
+        android:layout_alignEnd="@+id/project_button" />
 </RelativeLayout>

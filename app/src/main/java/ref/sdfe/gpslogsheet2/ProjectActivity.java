@@ -1,6 +1,10 @@
 package ref.sdfe.gpslogsheet2;
 
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
@@ -24,28 +28,54 @@ import android.view.ViewGroup;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ProjectActivity extends AppCompatActivity {
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
     private SectionsPagerAdapter mSectionsPagerAdapter;
-
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
     private ViewPager mViewPager;
+    private SharedPreferences prefs;
+    public Integer lastOpenedProject;
+    public List<ProjectEntry> projectsList;
+    public Context mContext;
+    public List<Integer> projectsListIDs;
+    public List<String> projectsListStrings;
+    private ProjectEntry project;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_project);
 
+        // Get application context
+        mContext = getApplicationContext();
+
+        //Get shared preferences
+        prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+
+        // Get readable database in order to get a list of projects
+        DataBaseHandler db = DataBaseHandler.getInstance(mContext);
+
+        //Get list of projects
+        List<ProjectEntry> projectsList = db.getAllProjectEntries();
+        projectsListIDs = new ArrayList<>();
+        projectsListStrings = new ArrayList<>();
+        // get project ID's and name
+        for (int i = 0; i < db.getProjectsCount(); i++) {
+            projectsListIDs.add(projectsList.get(i).getId());
+            projectsListStrings.add(projectsList.get(i).getName());
+        }
+
+        //Check for open/selected project
+        lastOpenedProject = prefs.getInt("lastOpenedProject", 0);
+        if (lastOpenedProject > 0){
+            project = db.getProjectEntry(lastOpenedProject);
+        }else{
+            //generate new id number for project.
+            Integer id = projectsListIDs.get(projectsListIDs.size());
+            project = new ProjectEntry(++id);
+        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -70,28 +100,28 @@ public class ProjectActivity extends AppCompatActivity {
         });
     }
 
-//
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_project, menu);
-//        return true;
-//    }
 
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        // Handle action bar item clicks here. The action bar will
-//        // automatically handle clicks on the Home/Up button, so long
-//        // as you specify a parent activity in AndroidManifest.xml.
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
-//    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_project, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
 
     // OLDJO: A Project setting fragment
@@ -228,14 +258,9 @@ public class ProjectActivity extends AppCompatActivity {
         }
     }
 
+    private class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        public SectionsPagerAdapter(FragmentManager fm) {
+        private SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
@@ -258,11 +283,11 @@ public class ProjectActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            // Show 3 total pages.
+            // Show 4 total pages.
             return 4;
         }
 
-        //OLDJO The hollowing controls what the tabs are called.
+        //OLDJO The following controls what the tabs are called.
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
