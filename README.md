@@ -108,3 +108,20 @@ C:\Brugere\<B-NUMMER>\AppData\Local\Programs\Git\cmd\git.exe
 ”Check out project from version control” -> ”Git”
 ved at indtaste dennes adresse under feltet ”Git Repository URL:”.
 Det anbefales at ”Parent Directory” sættes til en folder på roden af det lokale C-drev for bedst ydelse.
+
+## Android Debug Bridge (ADB) & Database Browser
+
+Find hvor Android Studio har placeret ADB, det kan f.eks. være:
+
+C:\Users\<B-NUMMER>\AppData\Local\Android\sdk\platform-tools
+
+I dette tilfælde kør følgende fra kommando prompten:
+
+"set PATH=%PATH%;C:\Users\<B-NUMMER>\AppData\Local\Android\sdk\platform-tools"
+
+Det gør at man kan køre adb.exe hvor som helst.
+
+Specifikt gør det os i stand til at køre følgende, der kopierer appens SQLite database til en folder på C:
+"adb pull /data/data/ref.sdfe.gpslogsheet2/databases/GPSLogSheet2.db C:\dev\"
+
+*.db filen kan nu åbnes i f.eks. "DB Browser for SQLite".

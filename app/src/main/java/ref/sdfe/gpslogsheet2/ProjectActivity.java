@@ -90,12 +90,27 @@ public class ProjectActivity extends AppCompatActivity {
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton fab_email = (FloatingActionButton) findViewById(R.id.fab_email);
+        fab_email.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "TODO: Email current project.", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+                // TODO: Email
+                // Make this fab button appear only when project has an observation
+                // Generate .batch files
+                // send email with relevant files.
+            }
+        });
+        FloatingActionButton fab_close = (FloatingActionButton) findViewById(R.id.fab_close);
+        fab_close.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "TODO: Save and close project.", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                // TODO: make dialog, "Do you want to save changes?"
+                // if yes commit project and images to database
+                // if no discard changes and close project.
             }
         });
     }
