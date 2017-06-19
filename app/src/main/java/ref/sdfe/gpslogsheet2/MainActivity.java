@@ -1,10 +1,14 @@
 package ref.sdfe.gpslogsheet2;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutCompat;
@@ -27,7 +31,8 @@ public class MainActivity extends AppCompatActivity {
     public List<Integer> projectsListIDs;
     public List<String> projectsListStrings;
     public Dialog dialog;
-
+    public Integer MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 100;
+    public DataBaseHandler db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Context mContext;
@@ -42,75 +47,39 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Get readable database in order to get a list of projects
-        DataBaseHandler db = DataBaseHandler.getInstance(mContext);
+        db = DataBaseHandler.getInstance(mContext);
 
-        // TEST Projects Test
-        ProjectEntry proj1 = new ProjectEntry(1);
-        ProjectEntry proj2 = new ProjectEntry(2);
-        ProjectEntry proj3 = new ProjectEntry(3);
-        ProjectEntry proj4 = new ProjectEntry(4);
-        ProjectEntry proj5 = new ProjectEntry(5);
-        ProjectEntry proj6 = new ProjectEntry(6);
-        ProjectEntry proj7 = new ProjectEntry(7);
-        ProjectEntry proj8 = new ProjectEntry(8);
-        ProjectEntry proj9 = new ProjectEntry(9);
-        ProjectEntry proj10 = new ProjectEntry(10);
-        ProjectEntry proj11 = new ProjectEntry(11);
-        ProjectEntry proj12 = new ProjectEntry(12);
-        ProjectEntry proj13 = new ProjectEntry(13);
-        ProjectEntry proj14 = new ProjectEntry(14);
-        ProjectEntry proj15 = new ProjectEntry(15);
-        ProjectEntry proj16 = new ProjectEntry(16);
-        ProjectEntry proj17 = new ProjectEntry(17);
-        ProjectEntry proj18 = new ProjectEntry(18);
-        ProjectEntry proj19 = new ProjectEntry(19);
-        proj1.setName("Project1");
-        proj2.setName("Project2");
-        proj3.setName("Project3");
-        proj4.setName("Project4");
-        proj5.setName("Project5");
-        proj6.setName("Project6");
-        proj7.setName("Project7");
-        proj8.setName("Project8");
-        proj9.setName("Project9");
-        proj10.setName("Project10");
-        proj11.setName("Project11");
-        proj12.setName("Project12");
-        proj13.setName("Project13");
-        proj14.setName("Project14");
-        proj15.setName("Project15");
-        proj16.setName("Project16");
-        proj17.setName("Project17");
-        proj18.setName("Project18");
-        proj19.setName("Project19");
+        // PERMISSIONS!
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
 
 
-        // put them into the database.
-        if (db.getProjectsCount() == 0 ){
-            db.addProjectEntry(proj1);
-            db.addProjectEntry(proj2);
-            db.addProjectEntry(proj3);
-            db.addProjectEntry(proj4);
-            db.addProjectEntry(proj5);
-            db.addProjectEntry(proj6);
-            db.addProjectEntry(proj7);
-            db.addProjectEntry(proj8);
-            db.addProjectEntry(proj9);
-            db.addProjectEntry(proj10);
-            db.addProjectEntry(proj11);
-            db.addProjectEntry(proj12);
-            db.addProjectEntry(proj13);
-            db.addProjectEntry(proj14);
-            db.addProjectEntry(proj15);
-            db.addProjectEntry(proj16);
-            db.addProjectEntry(proj17);
-            db.addProjectEntry(proj18);
-            db.addProjectEntry(proj19);
+                // MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
         }
+
+
 
         //Create list of projects
         //TODO: Medium/low priority: Find a way to show the list in reverse chronological order, alphabetical etc.
-        List<ProjectEntry> projectsList = db.getAllProjectEntries();
+        projectsList = db.getAllProjectEntries();
         projectsListIDs = new ArrayList<>();
         projectsListStrings = new ArrayList<>();
         // get project ID's and name
@@ -120,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
         }
         final Intent intent = new Intent(this, ProjectActivity.class);
 
+
+        //
         dialog = new Dialog(MainActivity.this);
         LayoutInflater inflater = getLayoutInflater();
         View convertView = inflater.inflate(R.layout.load_dialog, new LinearLayoutCompat(mContext), false);
@@ -145,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // If some project is already opened, e.g. was not closed on last run
+        // If some project is already opened, e.g. was not closed on last run, go straight to it.
         if (lastOpenedProject > 0){
             startActivity(intent);
         }
@@ -177,6 +148,22 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, ProjectActivity.class);
         startActivity(intent);
     }
+    @Override
+    public void onStart(){
+        super.onStart();
+
+        projectsList = db.getAllProjectEntries();
+        projectsListIDs = new ArrayList<>();
+        projectsListStrings = new ArrayList<>();
+        // get project ID's and name
+        for (int i = 0; i < db.getProjectsCount(); i++) {
+            projectsListIDs.add(projectsList.get(i).getId());
+            projectsListStrings.add(projectsList.get(i).getName());
+        }
+        final Intent intent = new Intent(this, ProjectActivity.class);
+
+    }
+
     private class StableArrayAdapter extends ArrayAdapter<String> {
 
         HashMap<String, Integer> mIdMap = new HashMap<String, Integer>();

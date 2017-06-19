@@ -123,5 +123,6 @@ Det gør at man kan køre adb.exe hvor som helst.
 
 Specifikt gør det os i stand til at køre følgende, der kopierer appens SQLite database til en folder på C:
 "adb pull /data/data/ref.sdfe.gpslogsheet2/databases/GPSLogSheet2.db C:\dev\"
+Det her virker på virtuelle maskiner med API 22, men ikke på API 25. Der er blevet indført permissions.
 
 *.db filen kan nu åbnes i f.eks. "DB Browser for SQLite".

@@ -1,17 +1,26 @@
 package ref.sdfe.gpslogsheet2;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
 import android.net.Uri;
-
+import java.util.GregorianCalendar;
 
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -19,12 +28,17 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
@@ -41,7 +55,17 @@ public class ProjectActivity extends AppCompatActivity {
     public Context mContext;
     public List<Integer> projectsListIDs;
     public List<String> projectsListStrings;
-    private ProjectEntry project;
+
+    public DataBaseHandler db;
+    public EditText projectNameField;
+    public EditText operatorNameField;
+
+    static public ProjectEntry project;
+    static public ProjectEntry project_backup; // so that changes can be discarded.
+    static public Boolean save = false; // should the project be saved
+
+    public static String current_projectName;
+    public static String current_projectOperator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,9 +77,11 @@ public class ProjectActivity extends AppCompatActivity {
 
         //Get shared preferences
         prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        //Create editor
+        final SharedPreferences.Editor editor = prefs.edit();
 
         // Get readable database in order to get a list of projects
-        DataBaseHandler db = DataBaseHandler.getInstance(mContext);
+        db = DataBaseHandler.getInstance(mContext);
 
         //Get list of projects
         List<ProjectEntry> projectsList = db.getAllProjectEntries();
@@ -71,11 +97,43 @@ public class ProjectActivity extends AppCompatActivity {
         lastOpenedProject = prefs.getInt("lastOpenedProject", 0);
         if (lastOpenedProject > 0){
             project = db.getProjectEntry(lastOpenedProject);
+            project_backup = project;
         }else{
             //generate new id number for project.
-            Integer id = projectsListIDs.get(projectsListIDs.size());
-            project = new ProjectEntry(++id);
+            Integer id = 0;
+            try {
+                id = projectsListIDs.get(projectsListIDs.size())+1;
+            }catch(IndexOutOfBoundsException e){
+                id = 1;
+            }
+
+
+            project = new ProjectEntry(id);
+            project_backup = project;
+            project.setName("Give me a name please 2.");
         }
+        current_projectName = project.getName();
+
+        //LOCATION
+        // Acquire a reference to the system Location Manager
+        LocationManager locationManager = (LocationManager)
+                this.getSystemService(Context.LOCATION_SERVICE);
+
+        // Define a listener that responds to location updates
+        LocationListener locationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                // Called when a new location is found by the network location provider.
+                // TODO: save location into local variable.
+                //makeUseOfNewLocation(location);
+            }
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+            public void onProviderEnabled(String provider) {}
+
+            public void onProviderDisabled(String provider) {}
+        };
+        String locationProvider = LocationManager.GPS_PROVIDER;
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -108,13 +166,86 @@ public class ProjectActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "TODO: Save and close project.", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                // TODO: make dialog, "Do you want to save changes?"
-                // if yes commit project and images to database
-                // if no discard changes and close project.
+
+                final Dialog dialog = new Dialog(ProjectActivity.this);
+                LayoutInflater inflater = getLayoutInflater();
+                View convertView = inflater.inflate(R.layout.close_dialog, new LinearLayoutCompat(mContext), false);
+                dialog.setContentView(convertView);
+                dialog.setCancelable(true);
+                dialog.setTitle("Close Project: Save or Discard changes?");
+
+                Button save_button = (Button)dialog.findViewById(R.id.save_button);
+                Button discard_button = (Button)dialog.findViewById(R.id.discard_button);
+
+                save_button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // SAVE CODE HERE
+
+                        // Clear lastOpenedProject from sharedprefs
+                        save = true;
+                        editor.putInt("lastOpenedProject", 0);
+                        editor.apply();
+
+                        // Close activity
+                        dialog.dismiss();
+                        finish();
+                    }
+                });
+
+                discard_button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // DISCARD CODE HERE
+
+                        // read backup project.
+                        save = true;
+                        project = project_backup;
+
+
+                        // Clear lastOpenedProject from sharedprefs
+                        editor.putInt("lastOpenedProject", 0);
+                        editor.apply();
+
+                        // Close activity
+                        dialog.dismiss();
+                        finish();
+                    }
+                });
+
+                dialog.show();
+
             }
         });
     }
 
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+
+        //TODO: save project to database
+        if ( save ) {
+            // Get application context
+            mContext = getApplicationContext();
+
+            // Get readable database in order to get a list of projects
+            //db = DataBaseHandler.getInstance(mContext);
+
+            // If old project
+            // TODO: change this to projectsIDs.contain(... ID ...)
+            if ( db.getProjectsCount() > project.getId()){
+                db.updateProjectEntry(project);
+
+            }else {
+                // else it is a new project
+                if (db.getAllProjectNames().contains(project.getName())){
+                    Log.i("SQL", "Tried to save new project with non-unique name");
+                }else{
+                    db.addProjectEntry(project);
+                }
+            }
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -148,6 +279,7 @@ public class ProjectActivity extends AppCompatActivity {
         private static final String ARG_SECTION_NUMBER = "1";
 
         public ProjectSettingsFragment() {
+
         }
 
         /**
@@ -161,6 +293,8 @@ public class ProjectActivity extends AppCompatActivity {
             fragment.setArguments(args);
             return fragment;
         }
+
+
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -177,6 +311,37 @@ public class ProjectActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
                 }
             });
+            // Text fields
+            final EditText projectNameField = (EditText) rootView.findViewById(R.id.editProjectName);
+            final EditText operatorNameField = (EditText) rootView.findViewById(R.id.editOperator);
+
+            projectNameField.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//                    try{
+//                        projectNameField.setText(current_projectName);
+//                    }catch(NullPointerException e){
+//                        projectNameField.setText("");
+//                    }
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    project.setModDate();
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    //TODO: make uniqueness test here!
+                    //if (~(projectNameField.getText()
+                    project.setName(projectNameField.getText().toString());
+                    Log.i("ProjectSettings", "Project Name Set to " + projectNameField.getText().toString());
+                    Log.i("ProjectEntry", "Project Name really IS " + project.getName());
+                }
+            });
+
+
             return rootView;
         }
     }

@@ -183,8 +183,26 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 
         // Insert row
         db.insert(TABLE_PROJECTS, null, values);
+
         // Close database
         db.close();
+
+        Log.i("SQL", "Project Entry added.");
+    }
+
+    // Update project TODO: currently only changes name
+    public int updateProjectEntry(ProjectEntry projectEntry) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_PROJ_NAME, projectEntry.getName());
+
+        Log.i("SQL", "Project Entry updated.");
+
+        // updating row
+        return db.update(TABLE_PROJECTS, values, KEY_PROJ_ID + " = ?",
+                new String[]{String.valueOf(projectEntry.getId())});
+
     }
 
     public ProjectEntry getProjectEntry(int id) {
@@ -220,6 +238,26 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         }
         return projectList;
     }
+    // Get list of all projects names
+    public List<String> getAllProjectNames() {
+        List<String> projectNamesList = new ArrayList<String>();
+        // Select all query
+        String selectQuery = "SELECT  * FROM " + TABLE_PROJECTS;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                ProjectEntry projectEntry = getProjectEntry(Integer.parseInt(cursor.getString(0)));
+                // Add project to list
+                projectNamesList.add(projectEntry.getName());
+            } while (cursor.moveToNext());
+        }
+        return projectNamesList;
+    }
+
+
 
     // Get number of projects in db
     public int getProjectsCount() {
@@ -233,17 +271,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         return count;
     }
 
-    // Update project TODO: currently only changes name
-    public int updateProjectEntry(ProjectEntry projectEntry) {
-        SQLiteDatabase db = this.getWritableDatabase();
 
-        ContentValues values = new ContentValues();
-        values.put(KEY_PROJ_NAME, projectEntry.getName());
-
-        // updating row
-        return db.update(TABLE_PROJECTS, values, KEY_PROJ_ID + " = ?",
-                new String[]{String.valueOf(projectEntry.getId())});
-    }
 
     // Delete project
     public void deleteProject(ProjectEntry projectEntry) {

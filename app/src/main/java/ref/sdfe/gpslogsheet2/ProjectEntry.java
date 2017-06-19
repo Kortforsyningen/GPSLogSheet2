@@ -37,8 +37,8 @@ class ProjectEntry {
     public int getModDate() {
         return modDate;
     }
-    public void setModDate(int modDate) {
-        this.modDate = modDate;
+    public void setModDate() {
+        this.modDate = GregorianCalendar.DATE;
     }
     public int getId() {
         return id;
@@ -48,6 +48,7 @@ class ProjectEntry {
     }
     public void setOperator(String operator) {
         this.operator = operator;
+        setModDate();
     }
     public int getStartDate() {
         return startDate;
@@ -57,27 +58,50 @@ class ProjectEntry {
     }
     public void setEndDate(int endDate) {
         this.endDate = endDate;
+        setModDate();
     }
     public String getName() {
         return name;
     }
     public void setName(String name) {
         this.name = name;
+        setModDate();
     }
 
     public void addSetup(Setup setup){
         this.setups.put(setup.getId(), setup);
+        setModDate();
     }
 
 
 
     class Setup{
 
+        private HashMap<Integer,Observation> observations; //HashMap to store observations
+        private int id;
+        private String fixedPoint;
+        private String hsName;
+        private int instrumentId;
+        private String instrument;
+        private int alarmId;
+        private String alarm;
+        private int antennaId;
+        private String antenna;
+        private String images;
+        private Boolean verticalToARP; //
+        private Boolean usingRod;
+        private double antennaHeight;
+        private double maxDeviation;
+
+        public Setup(int id) {
+            observations = new HashMap<Integer, Observation>();
+            this.id = id;
+            setModDate();
+        }
+
         public int getId() {
             return id;
         }
-
-        private int id;
 
         public String getFixedPoint() {
             return fixedPoint;
@@ -85,9 +109,8 @@ class ProjectEntry {
 
         public void setFixedPoint(String fixedPoint) {
             this.fixedPoint = fixedPoint;
+            setModDate();
         }
-
-        private String fixedPoint;
 
         public String getHsName() {
             return hsName;
@@ -95,15 +118,12 @@ class ProjectEntry {
 
         public void setHsName(String hsName) {
             this.hsName = hsName;
+            setModDate();
         }
-
-        private String hsName;
 
         public int getInstrumentId() {
             return instrumentId;
         }
-
-        private int instrumentId;
 
         public String getInstrument() {
             return instrument;
@@ -111,9 +131,8 @@ class ProjectEntry {
 
         public void setInstrument(String instrument) {
             this.instrument = instrument;
+            setModDate();
         }
-
-        private String instrument;
 
         public int getAlarmId() {
             return alarmId;
@@ -121,9 +140,8 @@ class ProjectEntry {
 
         public void setAlarmId(int alarmId) {
             this.alarmId = alarmId;
+            setModDate();
         }
-
-        private int alarmId;
 
         public String getAlarm() {
             return alarm;
@@ -131,9 +149,8 @@ class ProjectEntry {
 
         public void setAlarm(String alarm) {
             this.alarm = alarm;
+            setModDate();
         }
-
-        private String alarm;
 
         public int getAntennaId() {
             return antennaId;
@@ -141,9 +158,8 @@ class ProjectEntry {
 
         public void setAntennaId(int antennaId) {
             this.antennaId = antennaId;
+            setModDate();
         }
-
-        private int antennaId;
 
         public String getAntenna() {
             return antenna;
@@ -151,9 +167,8 @@ class ProjectEntry {
 
         public void setAntenna(String antenna) {
             this.antenna = antenna;
+            setModDate();
         }
-
-        private String antenna;
 
         public String getImages() {
             return images;
@@ -161,9 +176,8 @@ class ProjectEntry {
 
         public void setImages(String images) {
             this.images = images;
+            setModDate();
         }
-
-        private String images;
 
         public Boolean getVerticalToARP() {
             return verticalToARP;
@@ -171,9 +185,8 @@ class ProjectEntry {
 
         public void setVerticalToARP(Boolean verticalToARP) {
             this.verticalToARP = verticalToARP;
+            setModDate();
         }
-
-        private Boolean verticalToARP;
 
         public Boolean getUsingRod() {
             return usingRod;
@@ -181,9 +194,8 @@ class ProjectEntry {
 
         public void setUsingRod(Boolean usingRod) {
             this.usingRod = usingRod;
+            setModDate();
         }
-
-        private Boolean usingRod;
 
         public double getAntennaHeight() {
             return antennaHeight;
@@ -191,9 +203,8 @@ class ProjectEntry {
 
         public void setAntennaHeight(double antennaHeight) {
             this.antennaHeight = antennaHeight;
+            setModDate();
         }
-
-        private double antennaHeight;
 
         public double getMaxDeviation() {
             return maxDeviation;
@@ -201,21 +212,16 @@ class ProjectEntry {
 
         public void setMaxDeviation(double maxDeviation) {
             this.maxDeviation = maxDeviation;
+            setModDate();
         }
-
-        private double maxDeviation;
-
-        public Setup(int id) {
-            this.id = id;
-        }
-        private HashMap<Integer,Observation> observations; //HashMap to store observations
-
 
         public void addObservation(Observation observation){
             this.observations.put(observation.getId(),observation);
+            setModDate();
         }
         public void deleteObservation(Integer id){
             observations.remove(id);
+            setModDate();
         }
         public Integer[] getObservationIds(){
             Integer[] ids=new Integer[observations.keySet().size()];
@@ -239,6 +245,7 @@ class ProjectEntry {
             }
             public void setDate(int date) {
                 this.date = date;
+                setModDate();
                 //TODO: set the dayNumber too.
             }
             public String getRemark() {
@@ -246,6 +253,7 @@ class ProjectEntry {
             }
             public void setRemark(String remark) {
                 this.remark = remark;
+                setModDate();
             }
             public int getId() {
                 return id;
@@ -255,12 +263,18 @@ class ProjectEntry {
             }
             public void setMeasurement(double measurement) {
                 this.measurement = measurement;
+                setModDate();
             }
 
             public Observation(int id) {
                 this.id = id;
                 this.date = GregorianCalendar.DATE;
                 this.dayNumber = GregorianCalendar.DAY_OF_YEAR;
+                setModDate();
+            }
+            public String GenerateBatch(){
+                // Placeholder for batch file generation method.
+                return "teqc.exe - etc.. etc...";
             }
         }
     }
