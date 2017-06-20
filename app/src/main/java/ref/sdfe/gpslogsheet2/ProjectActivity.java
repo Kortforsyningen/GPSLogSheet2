@@ -22,6 +22,7 @@ import android.support.v7.widget.Toolbar;
 import android.net.Uri;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 import android.support.design.widget.TabLayout;
@@ -43,7 +44,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
@@ -70,8 +73,12 @@ public class ProjectActivity extends AppCompatActivity {
     static public ProjectEntry project_backup; // so that changes can be discarded.
     static public Boolean save = false; // should the project be saved
 
-    public static String current_projectName;
-    public static String current_projectOperator;
+    // Local variables for the text fields
+    private static String current_projectName;
+    private static String current_projectOperator;
+    private static String current_projectDate;
+    private static String current_projectModDate;
+
 
     private static InputFilter nameFilter;
     private static InputFilter numberFilter;
@@ -106,7 +113,12 @@ public class ProjectActivity extends AppCompatActivity {
         lastOpenedProject = prefs.getInt("lastOpenedProject", 0);
         if (lastOpenedProject > 0){
             project = db.getProjectEntry(lastOpenedProject);
-            project_backup = project;
+            try{
+                project_backup = (ProjectEntry) project.clone();
+            }catch(CloneNotSupportedException e){
+                Log.i("ProjectActivity","Cloning not supported :/");
+            }
+
         }else{
             //generate new id number for project.
             Integer id = 0;
@@ -118,11 +130,27 @@ public class ProjectActivity extends AppCompatActivity {
 
 
             project = new ProjectEntry(id);
-            project_backup = project;
+            try{
+                project_backup = (ProjectEntry) project.clone();
+            }catch(CloneNotSupportedException e){
+                Log.i("ProjectActivity","Cloning not supported :/");
+            }
             project.setName("Give me a name please 2.");
         }
+
+        // Load project data into local variables
         current_projectName = project.getName();
         Log.i("ProjectActivity",current_projectName);
+        current_projectOperator = project.getOperator();
+        Log.i("ProjectActivity",current_projectOperator);
+
+        // Get project dates and convert them to strings
+        long start_date_long = project.getStartDate();
+        Date start_date = new Date(start_date_long);
+        current_projectDate = start_date.toString();
+        long mod_date_long = project.getModDate();
+        Date mod_date = new Date(mod_date_long);
+        current_projectModDate = mod_date.toString();
 
         //LOCATION
         // Acquire a reference to the system Location Manager
@@ -157,7 +185,7 @@ public class ProjectActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-
+        // EMAIL BUTTON
         FloatingActionButton fab_email = (FloatingActionButton) findViewById(R.id.fab_email);
         fab_email.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -176,8 +204,9 @@ public class ProjectActivity extends AppCompatActivity {
         fab_close.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "TODO: Save and close project.", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
+                //Snackbar.make(view, "TODO: Save and close project.", Snackbar.LENGTH_LONG)
+                //        .setAction("Action", null).show();
 
                 final Dialog dialog = new Dialog(ProjectActivity.this);
                 LayoutInflater inflater = getLayoutInflater();
@@ -289,7 +318,71 @@ public class ProjectActivity extends AppCompatActivity {
                 }
             }
         };
+
     }
+
+@Override
+public void onBackPressed() {
+    Log.i("ProjectActivity","back pressed!");
+    final SharedPreferences.Editor editor = prefs.edit();
+
+    if (project_backup.getModDate() == project.getModDate()){
+        // No changes detected
+        Log.i("ProjectActivity","No changes detected.");
+        finish();
+    }else{
+        Log.i("ProjectActivity","back pressed! Dialog coming up!");
+        final Dialog dialog = new Dialog(ProjectActivity.this);
+        LayoutInflater inflater = getLayoutInflater();
+        View convertView = inflater.inflate(R.layout.close_dialog, new LinearLayoutCompat(mContext), false);
+        dialog.setContentView(convertView);
+        dialog.setCancelable(true);
+        dialog.setTitle("Close Project: Save or Discard changes?");
+
+        Button save_button = (Button)dialog.findViewById(R.id.save_button);
+        Button discard_button = (Button)dialog.findViewById(R.id.discard_button);
+
+        save_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // SAVE CODE HERE
+
+                // Clear lastOpenedProject from sharedprefs
+                save = true;
+                editor.putInt("lastOpenedProject", 0);
+                editor.apply();
+
+                // Close activity
+                dialog.dismiss();
+                finish();
+            }
+        });
+
+        discard_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // DISCARD CODE HERE
+
+                // read backup project.
+                save = true;
+                project = project_backup;
+
+
+                // Clear lastOpenedProject from sharedprefs
+                editor.putInt("lastOpenedProject", 0);
+                editor.apply();
+
+                // Close activity
+                dialog.dismiss();
+                finish();
+            }
+        });
+
+        dialog.show();
+    }
+
+
+}
 
 @Override
 protected void onDestroy(){
@@ -384,21 +477,16 @@ protected void onDestroy(){
             });
             // Text fields
             final EditText projectNameField = (EditText) rootView.findViewById(R.id.editProjectName);
+            projectNameField.setText(current_projectName);
             projectNameField.setFilters(new InputFilter[] {nameFilter });
-            final EditText operatorNameField = (EditText) rootView.findViewById(R.id.editOperator);
-
             projectNameField.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-
                 }
-
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     project.setModDate();
                 }
-
                 @Override
                 public void afterTextChanged(Editable s) {
                     //TODO: make uniqueness test here!
@@ -409,8 +497,48 @@ protected void onDestroy(){
                     Log.i("ProjectEntry", "Project Name really IS " + project.getName());
                 }
             });
+            projectNameField.setFocusable(false);
 
+            final EditText operatorNameField = (EditText) rootView.findViewById(R.id.editOperator);
+            operatorNameField.setText(current_projectOperator);
+            operatorNameField.setFilters(new InputFilter[] {nameFilter });
+            operatorNameField.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    project.setModDate();
+                }
+                @Override
+                public void afterTextChanged(Editable s) {
+                    //TODO: make uniqueness test here!
+                    //if (~(projectNameField.getText()
+                    project.setOperator(operatorNameField.getText().toString());
+                    current_projectOperator = operatorNameField.getText().toString();
+                    Log.i("ProjectSettings", "Operator Name Set to " + operatorNameField.getText().toString());
+                    Log.i("ProjectEntry", "Operator Name really IS " + project.getOperator());
+                }
+            });
+            operatorNameField.setFocusable(false);
 
+            //Switch that toggles editing
+            Switch editSwitch = (Switch) rootView.findViewById(R.id.edit_switch);
+            editSwitch.setChecked(false);
+            editSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked) {
+                        projectNameField.setFocusableInTouchMode(true);
+                        operatorNameField.setFocusableInTouchMode(true);
+                        Log.i("ProjectSettings","switch on!");
+                    } else {
+                        operatorNameField.setFocusable(false);
+                        projectNameField.setFocusable(false);
+                        Log.i("ProjectSettings","switch off!");
+                    }
+                }
+            });
+            editSwitch.setChecked(false);
             return rootView;
         }
     }

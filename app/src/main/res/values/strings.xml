@@ -92,5 +92,8 @@
     <string name="updateActivityTitle">Updating...</string>
     <string name="updateCancelButton">Cancel Update</string>
     <string name="edit_project_name">Project Name</string>
+    <string name="project_settings_title">Project Settings:</string>
+    <string name="operatorString">Operator</string>
+    <string name="edit_switch">Editing</string>
 
 </resources>

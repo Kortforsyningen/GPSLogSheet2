@@ -11,13 +11,13 @@ import java.util.HashMap;
  * Created by B028406 on 01-06-2017.
  */
 
-class ProjectEntry {
+class ProjectEntry implements Cloneable{
     private int id;
     private String name;
     private String operator;
-    private int startDate;
-    private int endDate;
-    private int modDate;
+    private long startDate;
+    private long endDate;
+    private long modDate;
     private HashMap<Integer,Setup> setups; //HasMap to store setups
 
     public ProjectEntry(int id) {
@@ -25,8 +25,8 @@ class ProjectEntry {
         * This constructor automatically gets current date
         * */
         this.id = id;
-        this.startDate = GregorianCalendar.DATE;
-        this.modDate = startDate;
+        this.startDate = System.currentTimeMillis();
+        this.modDate = System.currentTimeMillis();
     }
 
     public String getJsonString() {
@@ -34,11 +34,13 @@ class ProjectEntry {
         return gson.toJson(this);
     }
 
-    public int getModDate() {
+    public long getModDate() {
         return modDate;
     }
     public void setModDate() {
-        this.modDate = GregorianCalendar.DATE;
+        // TODO: This just gives the number five.
+        //this.modDate = GregorianCalendar.DATE;
+        this.modDate = System.currentTimeMillis();
     }
     public int getId() {
         return id;
@@ -50,13 +52,13 @@ class ProjectEntry {
         this.operator = operator;
         setModDate();
     }
-    public int getStartDate() {
+    public long getStartDate() {
         return startDate;
     }
-    public int getEndDate() {
+    public long getEndDate() {
         return endDate;
     }
-    public void setEndDate(int endDate) {
+    public void setEndDate(long endDate) {
         this.endDate = endDate;
         setModDate();
     }
@@ -71,6 +73,11 @@ class ProjectEntry {
     public void addSetup(Setup setup){
         this.setups.put(setup.getId(), setup);
         setModDate();
+    }
+
+    // OLDJO: Added this so that Project activity can store an unaltered copy.
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
 
