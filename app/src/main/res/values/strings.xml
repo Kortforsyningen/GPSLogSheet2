@@ -91,5 +91,6 @@
     <string name="settings_instruments">Instruments</string>
     <string name="updateActivityTitle">Updating...</string>
     <string name="updateCancelButton">Cancel Update</string>
+    <string name="edit_project_name">Project Name</string>
 
 </resources>

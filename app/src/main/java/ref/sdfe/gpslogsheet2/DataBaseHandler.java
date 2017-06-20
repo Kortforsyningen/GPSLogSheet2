@@ -196,6 +196,8 @@ public class DataBaseHandler extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(KEY_PROJ_NAME, projectEntry.getName());
+        values.put(KEY_PROJ_DATE_MOD, projectEntry.getModDate());
+        values.put(KEY_PROJ_CLOB, projectEntry.getJsonString());
 
         Log.i("SQL", "Project Entry updated.");
 
@@ -255,6 +257,25 @@ public class DataBaseHandler extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
         return projectNamesList;
+    }
+
+    // Get list of all projects names
+    public List<Integer> getAllProjectIDs() {
+        List<Integer> projectIDsList = new ArrayList<Integer>();
+        // Select all query
+        String selectQuery = "SELECT  * FROM " + TABLE_PROJECTS;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                ProjectEntry projectEntry = getProjectEntry(Integer.parseInt(cursor.getString(0)));
+                // Add project to list
+                projectIDsList.add(projectEntry.getId());
+            } while (cursor.moveToNext());
+        }
+        return projectIDsList;
     }
 
 

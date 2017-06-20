@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -51,6 +52,8 @@ public class UpdateActivity extends AppCompatActivity{
         private int reply;
         int duration = Toast.LENGTH_SHORT;
 
+        DataBaseHandler db;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -66,7 +69,7 @@ public class UpdateActivity extends AppCompatActivity{
             antennas = prefs.getBoolean("switch_preference_antennas",false);
             fixedpoints = prefs.getBoolean("switch_preference_points",false);
             instruments = prefs.getBoolean("switch_preference_instruments",false);
-            rods = prefs.getBoolean("switch_preference_bars",false);
+            rods = prefs.getBoolean("switch_preference_rods",false);
             projects = prefs.getBoolean("switch_preference_projects",false);
             images = prefs.getBoolean("switch_preference_images",false);
             projects = prefs.getBoolean("switch_preference_projects",false);
@@ -77,7 +80,7 @@ public class UpdateActivity extends AppCompatActivity{
             // Check if anything is supposed to be updated at all:
             if (projects || alarms || antennas || fixedpoints || instruments || rods) {
 
-                DataBaseHandler db = DataBaseHandler.getInstance(mContext);
+                db = DataBaseHandler.getInstance(mContext);
                 try {
                     // New instance of FTPClient
                     FTPClient ftpClient = new FTPClient();
@@ -415,6 +418,7 @@ public class UpdateActivity extends AppCompatActivity{
         }
         @Override
         protected void onPostExecute(CharSequence result) {
+            db.close();
             //CharSequence text = "onPostExecute executes!";
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(mContext, result, duration);

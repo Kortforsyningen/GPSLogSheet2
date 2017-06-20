@@ -20,6 +20,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
 import android.net.Uri;
+
+import java.util.Collections;
 import java.util.GregorianCalendar;
 
 import android.support.design.widget.TabLayout;
@@ -29,6 +31,9 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputFilter;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,6 +49,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class ProjectActivity extends AppCompatActivity {
 
@@ -56,9 +62,9 @@ public class ProjectActivity extends AppCompatActivity {
     public List<Integer> projectsListIDs;
     public List<String> projectsListStrings;
 
-    public DataBaseHandler db;
-    public EditText projectNameField;
-    public EditText operatorNameField;
+    private DataBaseHandler db;
+    private EditText projectNameField;
+    private EditText operatorNameField;
 
     static public ProjectEntry project;
     static public ProjectEntry project_backup; // so that changes can be discarded.
@@ -66,6 +72,9 @@ public class ProjectActivity extends AppCompatActivity {
 
     public static String current_projectName;
     public static String current_projectOperator;
+
+    private static InputFilter nameFilter;
+    private static InputFilter numberFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +90,7 @@ public class ProjectActivity extends AppCompatActivity {
         final SharedPreferences.Editor editor = prefs.edit();
 
         // Get readable database in order to get a list of projects
-        db = DataBaseHandler.getInstance(mContext);
+        db = DataBaseHandler.getInstance(getApplicationContext());
 
         //Get list of projects
         List<ProjectEntry> projectsList = db.getAllProjectEntries();
@@ -102,8 +111,8 @@ public class ProjectActivity extends AppCompatActivity {
             //generate new id number for project.
             Integer id = 0;
             try {
-                id = projectsListIDs.get(projectsListIDs.size())+1;
-            }catch(IndexOutOfBoundsException e){
+                id = Collections.max(projectsListIDs) + 1;
+            }catch(NoSuchElementException e){
                 id = 1;
             }
 
@@ -113,6 +122,7 @@ public class ProjectActivity extends AppCompatActivity {
             project.setName("Give me a name please 2.");
         }
         current_projectName = project.getName();
+        Log.i("ProjectActivity",current_projectName);
 
         //LOCATION
         // Acquire a reference to the system Location Manager
@@ -160,6 +170,8 @@ public class ProjectActivity extends AppCompatActivity {
                 // send email with relevant files.
             }
         });
+
+        // CLOSE BUTTON
         FloatingActionButton fab_close = (FloatingActionButton) findViewById(R.id.fab_close);
         fab_close.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -217,10 +229,70 @@ public class ProjectActivity extends AppCompatActivity {
 
             }
         });
+
+        // Input filters for the text fields
+        nameFilter = new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end,
+                                       Spanned dest, int dstart, int dend) {
+
+                if (source instanceof SpannableStringBuilder) {
+                    SpannableStringBuilder sourceAsSpannableBuilder = (SpannableStringBuilder) source;
+                    for (int i = end - 1; i >= start; i--) {
+                        char currentChar = source.charAt(i);
+                        if (!Character.isLetterOrDigit(currentChar) &&
+                                !(currentChar == '_') &&
+                                !(currentChar == '-')) {
+                            sourceAsSpannableBuilder.delete(i, i + 1);
+                        }
+                    }
+                    return source;
+                } else {
+                    StringBuilder filteredStringBuilder = new StringBuilder();
+                    for (int i = start; i < end; i++) {
+                        char currentChar = source.charAt(i);
+                        if (Character.isLetterOrDigit(currentChar) ||
+                                (currentChar == '_') ||
+                                (currentChar == '-')) {
+                            filteredStringBuilder.append(currentChar);
+                        }
+                    }
+                    return filteredStringBuilder.toString();
+                }
+            }
+        };
+        numberFilter = new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end,
+                                       Spanned dest, int dstart, int dend) {
+
+                if (source instanceof SpannableStringBuilder) {
+                    SpannableStringBuilder sourceAsSpannableBuilder = (SpannableStringBuilder) source;
+                    for (int i = end - 1; i >= start; i--) {
+                        char currentChar = source.charAt(i);
+                        if (!Character.isDigit(currentChar) &&
+                                !(currentChar == '.')) {
+                            sourceAsSpannableBuilder.delete(i, i + 1);
+                        }
+                    }
+                    return source;
+                } else {
+                    StringBuilder filteredStringBuilder = new StringBuilder();
+                    for (int i = start; i < end; i++) {
+                        char currentChar = source.charAt(i);
+                        if (Character.isDigit(currentChar) ||
+                                (currentChar == '.')) {
+                            filteredStringBuilder.append(currentChar);
+                        }
+                    }
+                    return filteredStringBuilder.toString();
+                }
+            }
+        };
     }
 
-    @Override
-    protected void onDestroy(){
+@Override
+protected void onDestroy(){
         super.onDestroy();
 
         //TODO: save project to database
@@ -231,11 +303,9 @@ public class ProjectActivity extends AppCompatActivity {
             // Get readable database in order to get a list of projects
             //db = DataBaseHandler.getInstance(mContext);
 
-            // If old project
-            // TODO: change this to projectsIDs.contain(... ID ...)
-            if ( db.getProjectsCount() > project.getId()){
+            //If project ID already in database
+            if ( db.getAllProjectIDs().contains(project.getId())){
                 db.updateProjectEntry(project);
-
             }else {
                 // else it is a new project
                 if (db.getAllProjectNames().contains(project.getName())){
@@ -245,6 +315,7 @@ public class ProjectActivity extends AppCompatActivity {
                 }
             }
         }
+        db.close();
     }
 
     @Override
@@ -313,16 +384,13 @@ public class ProjectActivity extends AppCompatActivity {
             });
             // Text fields
             final EditText projectNameField = (EditText) rootView.findViewById(R.id.editProjectName);
+            projectNameField.setFilters(new InputFilter[] {nameFilter });
             final EditText operatorNameField = (EditText) rootView.findViewById(R.id.editOperator);
 
             projectNameField.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//                    try{
-//                        projectNameField.setText(current_projectName);
-//                    }catch(NullPointerException e){
-//                        projectNameField.setText("");
-//                    }
+
 
                 }
 
@@ -336,6 +404,7 @@ public class ProjectActivity extends AppCompatActivity {
                     //TODO: make uniqueness test here!
                     //if (~(projectNameField.getText()
                     project.setName(projectNameField.getText().toString());
+                    current_projectName = projectNameField.getText().toString();
                     Log.i("ProjectSettings", "Project Name Set to " + projectNameField.getText().toString());
                     Log.i("ProjectEntry", "Project Name really IS " + project.getName());
                 }
