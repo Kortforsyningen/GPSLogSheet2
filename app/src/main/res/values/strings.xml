@@ -95,5 +95,6 @@
     <string name="project_settings_title">Project Settings:</string>
     <string name="operatorString">Operator</string>
     <string name="edit_switch">Editing</string>
+    <string name="cancelString">Cancel</string>
 
 </resources>

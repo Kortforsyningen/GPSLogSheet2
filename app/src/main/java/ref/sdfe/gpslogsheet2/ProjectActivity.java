@@ -35,6 +35,7 @@ import android.text.Editable;
 import android.text.InputFilter;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -43,6 +44,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -59,11 +61,11 @@ public class ProjectActivity extends AppCompatActivity {
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private SharedPreferences prefs;
-    public Integer lastOpenedProject;
+    public static Integer lastOpenedProject;
     public List<ProjectEntry> projectsList;
     public Context mContext;
-    public List<Integer> projectsListIDs;
-    public List<String> projectsListStrings;
+    public static List<Integer> projectsListIDs;
+    public static List<String> projectsListStrings;
 
     private DataBaseHandler db;
     private EditText projectNameField;
@@ -72,6 +74,7 @@ public class ProjectActivity extends AppCompatActivity {
     static public ProjectEntry project;
     static public ProjectEntry project_backup; // so that changes can be discarded.
     static public Boolean save = false; // should the project be saved
+    static public Boolean projectNameError = true; // Is project name invalid
 
     // Local variables for the text fields
     private static String current_projectName;
@@ -79,9 +82,12 @@ public class ProjectActivity extends AppCompatActivity {
     private static String current_projectDate;
     private static String current_projectModDate;
 
+    private static Boolean locationPermitted;
+
 
     private static InputFilter nameFilter;
     private static InputFilter numberFilter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +119,7 @@ public class ProjectActivity extends AppCompatActivity {
         lastOpenedProject = prefs.getInt("lastOpenedProject", 0);
         if (lastOpenedProject > 0){
             project = db.getProjectEntry(lastOpenedProject);
+            projectNameError = false;
             try{
                 project_backup = (ProjectEntry) project.clone();
             }catch(CloneNotSupportedException e){
@@ -135,14 +142,15 @@ public class ProjectActivity extends AppCompatActivity {
             }catch(CloneNotSupportedException e){
                 Log.i("ProjectActivity","Cloning not supported :/");
             }
-            project.setName("Give me a name please 2.");
+            project.setName("");
+            projectNameError = true;
         }
 
         // Load project data into local variables
         current_projectName = project.getName();
         Log.i("ProjectActivity",current_projectName);
         current_projectOperator = project.getOperator();
-        Log.i("ProjectActivity",current_projectOperator);
+        //Log.i("ProjectActivity",current_projectOperator);
 
         // Get project dates and convert them to strings
         long start_date_long = project.getStartDate();
@@ -153,6 +161,19 @@ public class ProjectActivity extends AppCompatActivity {
         current_projectModDate = mod_date.toString();
 
         //LOCATION
+
+        // Check for permission
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            locationPermitted = false;
+            Log.i("ProjectActivity","Location not permitted.");
+        }else{
+            locationPermitted = true;
+            Log.i("ProjectActivity","Location permitted.");
+        }
+
+
         // Acquire a reference to the system Location Manager
         LocationManager locationManager = (LocationManager)
                 this.getSystemService(Context.LOCATION_SERVICE);
@@ -205,57 +226,102 @@ public class ProjectActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                //Snackbar.make(view, "TODO: Save and close project.", Snackbar.LENGTH_LONG)
-                //        .setAction("Action", null).show();
+                if (projectNameError){
+                    // Project has invalid name
+                    Log.i("ProjectActivity","back pressed! Name Error!");
+                    final Dialog dialog = new Dialog(ProjectActivity.this);
+                    LayoutInflater inflater = getLayoutInflater();
+                    View convertView = inflater.inflate(R.layout.discard_dialog, new LinearLayoutCompat(mContext), false);
+                    dialog.setContentView(convertView);
+                    dialog.setCancelable(true);
+                    dialog.setTitle("Project name error, do you want to Discard changes?");
 
-                final Dialog dialog = new Dialog(ProjectActivity.this);
-                LayoutInflater inflater = getLayoutInflater();
-                View convertView = inflater.inflate(R.layout.close_dialog, new LinearLayoutCompat(mContext), false);
-                dialog.setContentView(convertView);
-                dialog.setCancelable(true);
-                dialog.setTitle("Close Project: Save or Discard changes?");
+                    Button cancel_button = (Button)dialog.findViewById(R.id.cancel_button);
+                    Button discard_button = (Button)dialog.findViewById(R.id.discard_button);
 
-                Button save_button = (Button)dialog.findViewById(R.id.save_button);
-                Button discard_button = (Button)dialog.findViewById(R.id.discard_button);
+                    cancel_button.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            // CANCEL CODE HERE
+                            // Close activity
+                            dialog.dismiss();
+                            //Move focus to projectNameField
+                            //projectNameField.requestFocus();
+                        }
+                    });
 
-                save_button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // SAVE CODE HERE
+                    discard_button.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            // DISCARD CODE HERE
 
-                        // Clear lastOpenedProject from sharedprefs
-                        save = true;
-                        editor.putInt("lastOpenedProject", 0);
-                        editor.apply();
+                            // read backup project.
+                            save = true;
+                            project = project_backup;
 
-                        // Close activity
-                        dialog.dismiss();
-                        finish();
-                    }
-                });
+                            editor.apply();
 
-                discard_button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // DISCARD CODE HERE
+                            // Close activity
+                            dialog.dismiss();
+                            finish();
+                        }
+                    });
 
-                        // read backup project.
-                        save = true;
-                        project = project_backup;
+                    dialog.show();
+
+                }else {
+
+                    //Snackbar.make(view, "TODO: Save and close project.", Snackbar.LENGTH_LONG)
+                    //        .setAction("Action", null).show();
+
+                    final Dialog dialog = new Dialog(ProjectActivity.this);
+                    LayoutInflater inflater = getLayoutInflater();
+                    View convertView = inflater.inflate(R.layout.close_dialog, new LinearLayoutCompat(mContext), false);
+                    dialog.setContentView(convertView);
+                    dialog.setCancelable(true);
+                    dialog.setTitle("Close Project: Save or Discard changes?");
+
+                    Button save_button = (Button) dialog.findViewById(R.id.save_button);
+                    Button discard_button = (Button) dialog.findViewById(R.id.discard_button);
+
+                    save_button.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            // SAVE CODE HERE
+
+                            // Clear lastOpenedProject from sharedprefs
+                            save = true;
+                            editor.putInt("lastOpenedProject", 0);
+                            editor.apply();
+
+                            // Close activity
+                            dialog.dismiss();
+                            finish();
+                        }
+                    });
+
+                    discard_button.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            // DISCARD CODE HERE
+
+                            // read backup project.
+                            save = true;
+                            project = project_backup;
 
 
-                        // Clear lastOpenedProject from sharedprefs
-                        editor.putInt("lastOpenedProject", 0);
-                        editor.apply();
+                            // Clear lastOpenedProject from sharedprefs
+                            editor.putInt("lastOpenedProject", 0);
+                            editor.apply();
 
-                        // Close activity
-                        dialog.dismiss();
-                        finish();
-                    }
-                });
+                            // Close activity
+                            dialog.dismiss();
+                            finish();
+                        }
+                    });
 
-                dialog.show();
-
+                    dialog.show();
+                }
             }
         });
 
@@ -321,68 +387,100 @@ public class ProjectActivity extends AppCompatActivity {
 
     }
 
-@Override
-public void onBackPressed() {
-    Log.i("ProjectActivity","back pressed!");
-    final SharedPreferences.Editor editor = prefs.edit();
+    @Override
+    public void onBackPressed() {
+        Log.i("ProjectActivity", "back pressed!");
+        Log.i("ProjectActivity", "projectNameError= " + projectNameError.toString());
+        final SharedPreferences.Editor editor = prefs.edit();
 
-    if (project_backup.getModDate() == project.getModDate()){
-        // No changes detected
-        Log.i("ProjectActivity","No changes detected.");
-        finish();
-    }else{
-        Log.i("ProjectActivity","back pressed! Dialog coming up!");
-        final Dialog dialog = new Dialog(ProjectActivity.this);
-        LayoutInflater inflater = getLayoutInflater();
-        View convertView = inflater.inflate(R.layout.close_dialog, new LinearLayoutCompat(mContext), false);
-        dialog.setContentView(convertView);
-        dialog.setCancelable(true);
-        dialog.setTitle("Close Project: Save or Discard changes?");
+        //TODO: This does not work for new project, since no backup ModDate.
+        if (project_backup.getModDate() == project.getModDate()){
+            // No changes detected
+            Log.i("ProjectActivity", "No changes detected.");
+            finish();
+        } else if (projectNameError) {
+            // Project has invalid name
+            Log.i("ProjectActivity", "back pressed! Name Error!");
+            final Dialog dialog = new Dialog(ProjectActivity.this);
+            LayoutInflater inflater = getLayoutInflater();
+            View convertView = inflater.inflate(R.layout.discard_dialog, new LinearLayoutCompat(mContext), false);
+            dialog.setContentView(convertView);
+            dialog.setCancelable(true);
+            dialog.setTitle("Project name error, do you want to Discard changes?");
 
-        Button save_button = (Button)dialog.findViewById(R.id.save_button);
-        Button discard_button = (Button)dialog.findViewById(R.id.discard_button);
+            Button cancel_button = (Button) dialog.findViewById(R.id.cancel_button);
+            Button discard_button = (Button) dialog.findViewById(R.id.discard_button);
 
-        save_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // SAVE CODE HERE
+            cancel_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // CANCEL CODE HERE
+                    // Close activity
+                    dialog.dismiss();
+                    //Move focus to projectNameField
 
-                // Clear lastOpenedProject from sharedprefs
-                save = true;
-                editor.putInt("lastOpenedProject", 0);
-                editor.apply();
+                    //TODO: Move focus to project name field, the below does not work.
+                    //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+                    //projectNameField.requestFocus();
+                }
+            });
 
-                // Close activity
-                dialog.dismiss();
-                finish();
-            }
-        });
+            discard_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // DISCARD CODE HERE
+                    // read backup project.
+                    save = false;
+                    dialog.dismiss();
+                    finish();
+                }
+            });
 
-        discard_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // DISCARD CODE HERE
+            dialog.show();
 
-                // read backup project.
-                save = true;
-                project = project_backup;
+        }else {
+            Log.i("ProjectActivity", "back pressed! Dialog coming up!");
+            final Dialog dialog = new Dialog(ProjectActivity.this);
+            LayoutInflater inflater = getLayoutInflater();
+            View convertView = inflater.inflate(R.layout.close_dialog, new LinearLayoutCompat(mContext), false);
+            dialog.setContentView(convertView);
+            dialog.setCancelable(true);
+            dialog.setTitle("Save or Discard changes?");
 
+            Button save_button = (Button) dialog.findViewById(R.id.save_button);
+            Button discard_button = (Button) dialog.findViewById(R.id.discard_button);
 
-                // Clear lastOpenedProject from sharedprefs
-                editor.putInt("lastOpenedProject", 0);
-                editor.apply();
+            save_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // SAVE CODE HERE
+                    save = true;
 
-                // Close activity
-                dialog.dismiss();
-                finish();
-            }
-        });
+                    // Close activity
+                    dialog.dismiss();
+                    finish();
+                }
+            });
 
-        dialog.show();
+            discard_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // DISCARD CODE HERE
+
+                    // read backup project.
+                    save = true;
+                    project = project_backup;
+
+                    // Close activity
+                    dialog.dismiss();
+                    finish();
+                }
+            });
+
+            dialog.show();
+        }
     }
 
-
-}
 
 @Override
 protected void onDestroy(){
@@ -478,6 +576,10 @@ protected void onDestroy(){
             // Text fields
             final EditText projectNameField = (EditText) rootView.findViewById(R.id.editProjectName);
             projectNameField.setText(current_projectName);
+            if (current_projectName.isEmpty()){
+                projectNameField.setError("Please enter a project name");
+                projectNameError = true;
+            }
             projectNameField.setFilters(new InputFilter[] {nameFilter });
             projectNameField.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -489,8 +591,37 @@ protected void onDestroy(){
                 }
                 @Override
                 public void afterTextChanged(Editable s) {
+//                    //Make sure the field is not left empty. This worked hilariously wrong.
+//                    if (projectNameField.getText().toString().isEmpty()){
+//                        projectNameField.setText("New_Project");
+//                    }
+//                    if(TextUtils.isEmpty(projectNameField.getText().toString())) {
+//                        projectNameField.setError("Project name cannot be empty.");
+//                        projectNameError = true;
+//                    }
+
                     //TODO: make uniqueness test here!
-                    //if (~(projectNameField.getText()
+                    // If the project list contain the name, but not the current project, e.g. non-unique.
+                    if (projectsListStrings.contains(projectNameField.getText().toString())) {
+                        if (lastOpenedProject > 0) {
+                            //int pos = projectsListIDs.
+                            if (!projectsListIDs.get(projectsListStrings.indexOf(projectNameField.getText().toString())).equals(lastOpenedProject)){
+                            //if (!projectNameField.getText().toString().toLowerCase().equals(current_projectName.toLowerCase())) {
+                                projectNameField.setError("Project name must be unique.");
+                                projectNameError = true;
+                            }
+                        }else{
+                            projectNameField.setError("Project name must be unique.");
+                            projectNameError = true;
+                        }
+                        projectNameError = false;
+                    }else if (projectNameField.getText().toString().isEmpty()) {
+                        projectNameField.setError("Project name cannot be empty.");
+                        projectNameError = true;
+                    }else{
+                        projectNameError = false;
+                    }
+
                     project.setName(projectNameField.getText().toString());
                     current_projectName = projectNameField.getText().toString();
                     Log.i("ProjectSettings", "Project Name Set to " + projectNameField.getText().toString());
@@ -538,7 +669,15 @@ protected void onDestroy(){
                     }
                 }
             });
-            editSwitch.setChecked(false);
+
+            //If new project start with edit on, else edit off.
+            if (current_projectName.isEmpty()){
+                editSwitch.setChecked(true);
+                projectNameField.requestFocus();
+            }else{
+                editSwitch.setChecked(false);
+            }
+
             return rootView;
         }
     }
