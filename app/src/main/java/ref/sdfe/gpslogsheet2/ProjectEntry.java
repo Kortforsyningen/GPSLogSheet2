@@ -1,6 +1,8 @@
 package ref.sdfe.gpslogsheet2;
 
 
+import android.util.Log;
+
 import com.google.gson.Gson;
 
 import java.util.Calendar;
@@ -18,6 +20,11 @@ class ProjectEntry implements Cloneable{
     private long startDate;
     private long endDate;
     private long modDate;
+
+    public HashMap<Integer, Setup> getSetups() {
+        return setups;
+    }
+
     private HashMap<Integer,Setup> setups; //HasMap to store setups
 
     public ProjectEntry(int id) {
@@ -41,6 +48,7 @@ class ProjectEntry implements Cloneable{
         // TODO: This just gives the number five.
         //this.modDate = GregorianCalendar.DATE;
         this.modDate = System.currentTimeMillis();
+        Log.i("ProjectEntry","Project Modified.");
     }
     public int getId() {
         return id;

@@ -10,22 +10,16 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
-import android.net.Uri;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -35,7 +29,6 @@ import android.text.Editable;
 import android.text.InputFilter;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,22 +37,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
-import android.widget.TableLayout;
-import android.widget.TextView;
+import android.widget.TabHost;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 public class ProjectActivity extends AppCompatActivity {
 
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-    private ViewPager mViewPager;
     private SharedPreferences prefs;
     public static Integer lastOpenedProject;
     public List<ProjectEntry> projectsList;
@@ -87,7 +77,6 @@ public class ProjectActivity extends AppCompatActivity {
 
     private static InputFilter nameFilter;
     private static InputFilter numberFilter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,6 +149,18 @@ public class ProjectActivity extends AppCompatActivity {
         Date mod_date = new Date(mod_date_long);
         current_projectModDate = mod_date.toString();
 
+        //Setups
+        HashMap<Integer,ProjectEntry.Setup> setups = project.getSetups();
+        try {
+            if (setups.isEmpty()) {
+                Log.i("Setups", "There are no setups.");
+            } else {
+                Log.i("Setups", "There are setups.");
+            }
+        }catch(NullPointerException e){
+            Log.i("Setups", "There are no setups.");
+        }
+
         //LOCATION
 
         // Check for permission
@@ -200,10 +201,10 @@ public class ProjectActivity extends AppCompatActivity {
         //toolbar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         // EMAIL BUTTON
@@ -394,10 +395,10 @@ public class ProjectActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Log.i("ProjectActivity", "back pressed!");
-        Log.i("ProjectActivity", "projectNameError= " + projectNameError.toString());
+        Log.i("ProjectActivity", "projectNameError = " + projectNameError.toString());
         final SharedPreferences.Editor editor = prefs.edit();
 
-        //TODO: This does not work for new project, since no backup ModDate.
+        // TODO: This sometimes does not work.
         if (project_backup.getModDate() == project.getModDate()){
             // No changes detected
             Log.i("ProjectActivity", "No changes detected.");
@@ -529,6 +530,63 @@ protected void onDestroy(){
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Log.i("Toolbar","Options pressed");
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        if (id == R.id.action_delete) {
+            Log.i("Toolbar","Delete pressed");
+            //TODO: create popup with warning to delete
+
+            final Dialog delete_dialog = new Dialog(ProjectActivity.this);
+            LayoutInflater inflater = getLayoutInflater();
+            View convertView = inflater.inflate(R.layout.delete_dialog, new LinearLayoutCompat(mContext), false);
+            delete_dialog.setContentView(convertView);
+            delete_dialog.setCancelable(true);
+            delete_dialog.setTitle("WARNING!");
+
+            Button cancel_button = (Button)delete_dialog.findViewById(R.id.cancel_button);
+            final Button delete_button = (Button)delete_dialog.findViewById(R.id.delete_button);
+
+            //Switch that toggles delete button
+            Switch editSwitch = (Switch)delete_dialog.findViewById(R.id.delete_switch);
+            editSwitch.setChecked(false);
+            editSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked) {
+                        delete_button.setEnabled(true);
+                        Log.i("ProjectActivity","Delete switch on :O !");
+                    } else {
+                        delete_button.setEnabled(false);
+                        Log.i("ProjectActivity","Delete switch off!");
+                    }
+                }
+            });
+
+            cancel_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    delete_dialog.dismiss();
+                }
+            });
+            delete_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    // DELETE CODE HERE
+                    Log.i("ProjectActivity","TODO: DELETION");
+                    db.deleteProject(project);
+                    delete_dialog.dismiss();
+                    final SharedPreferences.Editor editor = prefs.edit();
+                    editor.putInt("lastOpenedProject", -1);
+                    editor.commit();
+                    save = false;
+                    finish();
+                }
+            });
+
+            delete_dialog.show();
             return true;
         }
 
@@ -577,6 +635,7 @@ protected void onDestroy(){
                         .setAction("Action", null).show();
                 }
             });
+
             // Text fields
             final EditText projectNameField = (EditText) rootView.findViewById(R.id.editProjectName);
             projectNameField.setText(current_projectName);

@@ -96,5 +96,9 @@
     <string name="operatorString">Operator</string>
     <string name="edit_switch">Editing</string>
     <string name="cancelString">Cancel</string>
+    <string name="delete_project">Delete Project</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="delete_query">Are you sure you want to delete the project?</string>
 
 </resources>
