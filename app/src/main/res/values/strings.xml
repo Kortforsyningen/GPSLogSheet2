@@ -100,5 +100,7 @@
     <string name="no">No</string>
     <string name="yes">Yes</string>
     <string name="delete_query">Are you sure you want to delete the project?</string>
+    <string name="invalid_name_query">Project name invalid, do you want to discard changes?</string>
+    <string name="close_project_title">Close Project: Save or Discard changes?</string>
 
 </resources>
