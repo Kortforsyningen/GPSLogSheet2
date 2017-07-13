@@ -256,8 +256,12 @@ public class ProjectActivity extends AppCompatActivity {
                             // DISCARD CODE HERE
 
                             // read backup project.
-                            save = true;
-                            project = project_backup;
+                            if (!project_backup.getName().isEmpty()){
+                                project = project_backup;
+                                save = true;
+                            }else{
+                                save = false;
+                            }
 
                             editor.apply();
 
