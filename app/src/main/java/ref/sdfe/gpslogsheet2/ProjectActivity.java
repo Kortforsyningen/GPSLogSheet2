@@ -12,6 +12,7 @@ import android.location.LocationManager;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutCompat;
@@ -30,6 +31,7 @@ import android.text.InputFilter;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -43,11 +45,15 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TabHost;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.logging.StreamHandler;
+
+import static android.R.layout.simple_list_item_1;
 
 public class ProjectActivity extends AppCompatActivity {
 
@@ -72,6 +78,9 @@ public class ProjectActivity extends AppCompatActivity {
     private static String current_projectOperator;
     private static String current_projectDate;
     private static String current_projectModDate;
+    private static String current_projectEndDate;
+
+    private static String projectTextTemplate;
 
     private static Boolean locationPermitted;
 
@@ -83,7 +92,8 @@ public class ProjectActivity extends AppCompatActivity {
     public ArrayAdapter setupsAdapter;
     private List<Integer> setupsListIDs;
     private List<String> setupsListStrings;
-    private List<ProjectEntry.Setup> setupsList;
+    private HashMap<Integer,ProjectEntry.Setup> setupsList;
+    private static TabHost tabHost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +102,8 @@ public class ProjectActivity extends AppCompatActivity {
 
         // Get application context
         mContext = getApplicationContext();
+
+        projectTextTemplate = getResources().getString(R.string.projectTextTemplate);
 
         //Get shared preferences
         prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -116,6 +128,7 @@ public class ProjectActivity extends AppCompatActivity {
         if (lastOpenedProject > 0){
             project = db.getProjectEntry(lastOpenedProject);
             projectNameError = false;
+
             try{
                 project_backup = (ProjectEntry) project.clone();
             }catch(CloneNotSupportedException e){
@@ -164,8 +177,14 @@ public class ProjectActivity extends AppCompatActivity {
                 Log.i("Setups", "There are setups.");
             }
         }catch(NullPointerException e){
-            Log.i("Setups", "There are no setups.");
+            Log.i("Setups", "There are no setups 2.");
         }
+
+        setupsListIDs = new ArrayList<>();
+        setupsListStrings = new ArrayList<>();
+
+        populateSetupsList();
+        setupsAdapter = new ArrayAdapter<>(this, simple_list_item_1, setupsListStrings);
 
         //LOCATION
 
@@ -388,24 +407,24 @@ public class ProjectActivity extends AppCompatActivity {
     }
 
     // TODO: setups list, and adapter to display them in the project activity.
-//    public void populateSetupsList(){
-//        // Get readable database in order to get a list of projects
-//        db = DataBaseHandler.getInstance(getApplicationContext());
-//        setupsListIDs.clear();
-//        setupsListStrings.clear();
-//        setupsList = project.getSetups();
-//
-//        for (int i = 0; i < db.getProjectsCount(); i++) {
-//            projectsListIDs.add(projectsList.get(i).getId());
-//            projectsListStrings.add(projectsList.get(i).getName());
-//        }
-//        try{
-//            setupsAdapter.notifyDataSetChanged();
-//        }catch (NullPointerException e){
-//
-//        }
-//        db.close();
-//    }
+    public void populateSetupsList(){
+        // Get readable database in order to get a list of projects
+        //db = DataBaseHandler.getInstance(getApplicationContext());
+        setupsListIDs.clear();
+        setupsListStrings.clear();
+        setupsList = project.getSetups();
+
+        for (int i = 0; i < project.getSetupsCount(); i++) {
+            setupsListIDs.add(setupsList.get(i).getId());
+            setupsListStrings.add(setupsList.get(i).getFixedPoint());
+        }
+        try{
+            setupsAdapter.notifyDataSetChanged();
+        }catch (NullPointerException e){
+
+        }
+        //db.close();
+    }
 
     @Override
     public void onBackPressed() {
@@ -631,7 +650,6 @@ protected void onDestroy(){
         }
 
 
-
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
@@ -643,47 +661,49 @@ protected void onDestroy(){
             fcb.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                Snackbar.make(view, "TODO: Camera Activity or something. Also placement.", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                    Snackbar.make(view, "TODO: Camera Activity or something. Also placement.", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
                 }
             });
 
-            // Text fields
+            // Input Text fields
             final EditText projectNameField = (EditText) rootView.findViewById(R.id.editProjectName);
             projectNameField.setText(current_projectName);
-            if (current_projectName.isEmpty()){
+            if (current_projectName.isEmpty()) {
                 projectNameField.setError("Please enter a project name");
                 projectNameError = true;
             }
-            projectNameField.setFilters(new InputFilter[] {nameFilter });
+            projectNameField.setFilters(new InputFilter[]{nameFilter});
             projectNameField.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 }
+
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     project.setModDate();
                 }
+
                 @Override
                 public void afterTextChanged(Editable s) {
                     // If the project list contain the name, but not the current project, e.g. non-unique.
                     if (projectsListStrings.contains(projectNameField.getText().toString())) {
                         if (lastOpenedProject > 0) {
                             //int pos = projectsListIDs.
-                            if (!projectsListIDs.get(projectsListStrings.indexOf(projectNameField.getText().toString())).equals(lastOpenedProject)){
-                            //if (!projectNameField.getText().toString().toLowerCase().equals(current_projectName.toLowerCase())) {
+                            if (!projectsListIDs.get(projectsListStrings.indexOf(projectNameField.getText().toString())).equals(lastOpenedProject)) {
+                                //if (!projectNameField.getText().toString().toLowerCase().equals(current_projectName.toLowerCase())) {
                                 projectNameField.setError("Project name must be unique.");
                                 projectNameError = true;
                             }
-                        }else{
+                        } else {
                             projectNameField.setError("Project name must be unique.");
                             projectNameError = true;
                         }
                         projectNameError = false;
-                    }else if (projectNameField.getText().toString().isEmpty()) {
+                    } else if (projectNameField.getText().toString().isEmpty()) {
                         projectNameField.setError("Project name cannot be empty.");
                         projectNameError = true;
-                    }else{
+                    } else {
                         projectNameError = false;
                     }
 
@@ -695,15 +715,17 @@ protected void onDestroy(){
 
             final EditText operatorNameField = (EditText) rootView.findViewById(R.id.editOperator);
             operatorNameField.setText(current_projectOperator);
-            operatorNameField.setFilters(new InputFilter[] {nameFilter });
+            operatorNameField.setFilters(new InputFilter[]{nameFilter});
             operatorNameField.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 }
+
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     project.setModDate();
                 }
+
                 @Override
                 public void afterTextChanged(Editable s) {
                     project.setOperator(operatorNameField.getText().toString());
@@ -720,24 +742,64 @@ protected void onDestroy(){
                     if (isChecked) {
                         projectNameField.setFocusableInTouchMode(true);
                         operatorNameField.setFocusableInTouchMode(true);
-                        Log.i("ProjectSettings","switch on!");
+                        Log.i("ProjectSettings", "switch on!");
                     } else {
                         operatorNameField.setFocusable(false);
                         projectNameField.setFocusable(false);
-                        Log.i("ProjectSettings","switch off!");
+                        Log.i("ProjectSettings", "switch off!");
                     }
                 }
             });
 
             //If new project start with edit on, else edit off.
-            if (current_projectName.isEmpty()){
+            if (current_projectName.isEmpty()) {
                 editSwitch.setChecked(true);
                 projectNameField.requestFocus();
-            }else{
+            } else {
                 editSwitch.setChecked(false);
             }
 
+            // Text fields
+
+            final TextView projectTextView = (TextView) rootView.findViewById(R.id.projectTextView);
+
+            // Get project end date or display not set if the value is null.
+            if (Long.valueOf(project.getEndDate()).toString().equals("0")) {
+                current_projectEndDate = "Not set.";
+            } else {
+                current_projectEndDate = DateFormat.format("dd/MM/yyyy", new Date(project.getEndDate())).toString();
+            }
+            current_projectModDate = DateFormat.format("dd/MM/yyyy", new Date(project.getModDate())).toString();
+            current_projectDate = DateFormat.format("dd/MM/yyyy", new Date(project.getStartDate())).toString();
+
+            projectTextView.setText(String.format(projectTextTemplate,
+                    current_projectDate, current_projectModDate, current_projectEndDate));
+
+
+//            View view = inflater.inflate(R.layout.fragment_project, container, false);
+//            tab = (TabHost) view.findViewById(R.id.tabHost);
+            new SetupsTabFregment();
+
             return rootView;
+        }
+
+        public class SetupsTabFregment extends Fragment {
+
+            private TabHost tab;
+
+            @Override
+            public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                     Bundle savedInstanceState) {
+                View view = inflater.inflate(R.layout.fragment_project, container, false);
+                tab = (TabHost) view.findViewById(R.id.tabHost);
+                return view;
+            }
+
+            public void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+                //addNewTab("Friends", BasicFragment.class, savedInstanceState);  //Chat Tab
+                //setTabHeight(50);
+            }
         }
     }
     /**

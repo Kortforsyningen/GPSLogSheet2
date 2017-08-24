@@ -13,6 +13,8 @@
     <string name="tab_name_4">Extras</string>
     <string name="nothing_to_load">No Projects in Database.</string>
 
+    <string name="projectTextTemplate">Date created: %1$s \nDate modified: %2$s \nDate to end: %3$s \n</string>
+
     <!-- Strings related to Settings -->
 
     <!-- Example General settings -->
@@ -91,7 +93,7 @@
     <string name="settings_instruments">Instruments</string>
     <string name="updateActivityTitle">Updating...</string>
     <string name="updateCancelButton">Cancel Update</string>
-    <string name="edit_project_name">Project Name</string>
+    <string name="edit_project_name">Name</string>
     <string name="project_settings_title">Project Settings:</string>
     <string name="operatorString">Operator</string>
     <string name="edit_switch">Editing</string>

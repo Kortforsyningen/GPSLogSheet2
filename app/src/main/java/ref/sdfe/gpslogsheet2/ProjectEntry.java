@@ -24,6 +24,14 @@ class ProjectEntry implements Cloneable{
     public HashMap<Integer, Setup> getSetups() {
         return setups;
     }
+    public int getSetupsCount() {
+        try{
+            return setups.size();
+        }catch (NullPointerException E){
+            return 0;
+        }
+
+    }
 
     private HashMap<Integer,Setup> setups; //HasMap to store setups
 

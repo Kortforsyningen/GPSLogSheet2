@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
 
         populateProjectList();
 
-        adapter = new ArrayAdapter(this, simple_list_item_1, projectsListStrings);
+        adapter = new ArrayAdapter<>(this, simple_list_item_1, projectsListStrings);
         listview = (ListView) convertView.findViewById(R.id.LoadList);
 
         listview.setAdapter(adapter);
@@ -97,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
 
                 editor.putInt("lastOpenedProject",projectsListIDs.get(position));
                 editor.apply();
-                //TODO: save in prefs
                 startActivity(intent);
                 dialog.dismiss();
             }
