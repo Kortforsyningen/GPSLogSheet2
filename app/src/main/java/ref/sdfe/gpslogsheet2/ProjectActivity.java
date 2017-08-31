@@ -13,6 +13,8 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.FragmentTabHost;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutCompat;
@@ -626,12 +628,13 @@ protected void onDestroy(){
 
 
     // OLDJO: A Project setting fragment
-    public static class ProjectSettingsFragment extends Fragment {
+    public static class ProjectSettingsFragment extends Fragment{
         /**
          * The fragment argument representing the section number for this
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "1";
+        private FragmentTabHost setupsTabHost;
 
         public ProjectSettingsFragment() {
 
@@ -776,31 +779,23 @@ protected void onDestroy(){
                     current_projectDate, current_projectModDate, current_projectEndDate));
 
 
-//            View view = inflater.inflate(R.layout.fragment_project, container, false);
-//            tab = (TabHost) view.findViewById(R.id.tabHost);
-            new SetupsTabFregment();
+            // Setups
+
+            setupsTabHost = new FragmentTabHost(getActivity());
+
+            //setupsTabHost.setup(getActivity(), getChildFragmentManager(), R.id.tabHost);
+            //setupsTabHost.setup(getActivity(), getChildFragmentManager(), R.layout.fragment_project);
+            setupsTabHost.setup(getActivity(), getChildFragmentManager(), R.layout.activity_project);
+
+            Bundle arg1 = new Bundle();
+            arg1.putInt("Arg for Frag1", 1);
+            setupsTabHost.addTab(setupsTabHost.newTabSpec("Tab1").setIndicator("Frag Tab1"),
+                    SetupsFragment.class, arg1);
+
 
             return rootView;
         }
 
-        public class SetupsTabFregment extends Fragment {
-
-            private TabHost tab;
-
-            @Override
-            public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                     Bundle savedInstanceState) {
-                View view = inflater.inflate(R.layout.fragment_project, container, false);
-                tab = (TabHost) view.findViewById(R.id.tabHost);
-                return view;
-            }
-
-            public void onCreate(Bundle savedInstanceState) {
-                super.onCreate(savedInstanceState);
-                //addNewTab("Friends", BasicFragment.class, savedInstanceState);  //Chat Tab
-                //setTabHeight(50);
-            }
-        }
     }
     /**
      * A placeholder fragment containing a simple view.
@@ -895,50 +890,5 @@ protected void onDestroy(){
         }
     }
 
-    private class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        private SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            switch (position) {
-                case 0:
-                    return ProjectSettingsFragment.newInstance(position + 1);
-                case 1:
-                    return ObservationsFragment.newInstance(position + 1);
-                case 2:
-                    return MapsFragment.newInstance(position + 1);
-                case 3:
-                    return ExtrasFragment.newInstance(position + 1);
-                }
-            return null;
-        }
-
-        @Override
-        public int getCount() {
-            // Show 4 total pages.
-            return 4;
-        }
-
-        //OLDJO The following controls what the tabs are called.
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "Project Settings";
-                case 1:
-                    return "Observations";
-                case 2:
-                    return "Map";
-                case 3:
-                    return "Extras";
-            }
-            return null;
-        }
-    }
 }
 
