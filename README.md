@@ -39,9 +39,9 @@ Current progress:
 - [x] Create SQLite database
 - [x] Settings activity
 - [x] Interface with the server
-- [ ] Create ETL (Extract, Transform, Load) functions
-- [ ] Ability to save projects
-- [ ] Ability to load projects
+- [x] Create ETL (Extract, Transform, Load) functions
+- [x] Ability to save projects
+- [x] Ability to load projects
 - [ ] Generation of .bat scripts
 - [ ] Upload of projects to server
 - [ ] Camera integration
@@ -65,6 +65,7 @@ Settings files on the server are stored as comma separated values, in separate f
 ## Android udvikling på SIA’s PC’er
 For at kunne køre Android Studio samt virtuelle Android enheder direkte fra Windows kræves følgende:
 
+- 0.    Windows 7 (ikke Windows 10, da Hyper-V blokerer for virtualization og ikke kan slåes fra med de gældende sikkerhedsreger.
 - 1.	Virtualization slået til i BIOS
 - 2.	Android Studio
 - 3.	Intel HAXM
