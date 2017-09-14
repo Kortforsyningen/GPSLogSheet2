@@ -95,7 +95,6 @@ public class ProjectActivity extends AppCompatActivity {
     private List<Integer> setupsListIDs;
     private List<String> setupsListStrings;
     private HashMap<Integer,ProjectEntry.Setup> setupsList;
-    private static TabHost tabHost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -434,7 +433,6 @@ public class ProjectActivity extends AppCompatActivity {
         Log.i("ProjectActivity", "projectNameError = " + projectNameError.toString());
         final SharedPreferences.Editor editor = prefs.edit();
 
-        // TODO: This sometimes does not work.
         if (project_backup.getModDate() == project.getModDate()){
             // No changes detected
             Log.i("ProjectActivity", "No changes detected.");
@@ -634,8 +632,9 @@ protected void onDestroy(){
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "1";
-        private FragmentTabHost setupsTabHost;
 
+        private SetupTabsHostParentFragment setupsTabHost;
+        private List<Fragment> setupsFragmentsList;
         public ProjectSettingsFragment() {
 
         }
@@ -794,115 +793,19 @@ protected void onDestroy(){
 
 
             // Setups
-
-            setupsTabHost = new FragmentTabHost(getActivity());
-
-            //setupsTabHost.setup(getActivity(), getChildFragmentManager(), R.id.tabHost);
-            //setupsTabHost.setup(getActivity(), getChildFragmentManager(), R.layout.fragment_project);
-            setupsTabHost.setup(getActivity(), getChildFragmentManager(), R.layout.activity_project);
-
-            Bundle arg1 = new Bundle();
-            arg1.putInt("Arg for Frag1", 1);
-            setupsTabHost.addTab(setupsTabHost.newTabSpec("Tab1").setIndicator("Frag Tab1"),
-                    SetupsFragment.class, arg1);
+            //setupsTabHost = (android.support.v4.app.FragmentTabHost) rootView.findViewById(R.id.tabHost);
+            //setupsTabHost.addTab(setupsTabHost.newTabSpec("1").setIndicator("Music"), SetupsFragment.class, null);
+            //setupsTabHost = (FragmentTabHost) rootView.findViewById(R.id.tabHost);
+            //setupsTabHost.addTab(setupsTabHost.newTabSpec("1").setIndicator("Music"), SetupsFragment.class, null);
+            //setupsTabHost = (SetupTabsHostParentFragment) rootView.findViewById(android.R.id.tabhost)
 
 
             return rootView;
         }
 
     }
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class ObservationsFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "2";
 
-        public ObservationsFragment() {
-        }
 
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static ObservationsFragment newInstance(int sectionNumber) {
-            ObservationsFragment fragment = new ObservationsFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_observations, container, false);
-        }
-    }
-    /**
-     * MAPS fragment
-     */
-    public static class MapsFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "3";
-
-        public MapsFragment() {
-        }
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static MapsFragment newInstance(int sectionNumber) {
-            MapsFragment fragment = new MapsFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_maps, container, false);
-        }
-    }    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class ExtrasFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "4";
-
-        public ExtrasFragment() {
-        }
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static ExtrasFragment newInstance(int sectionNumber) {
-            ExtrasFragment fragment = new ExtrasFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            return inflater.inflate(R.layout.fragment_extras, container, false);
-        }
-    }
 
 }
 

@@ -6,6 +6,8 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 /**
  * Created by B028406 on 8/31/2017.
+ *
+ *
  */
 
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
@@ -22,11 +24,11 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
             case 0:
                 return ProjectActivity.ProjectSettingsFragment.newInstance(position + 1);
             case 1:
-                return ProjectActivity.ObservationsFragment.newInstance(position + 1);
+                return ObservationsFragment.newInstance(position + 1);
             case 2:
-                return ProjectActivity.MapsFragment.newInstance(position + 1);
+                return MapsFragment.newInstance(position + 1);
             case 3:
-                return ProjectActivity.ExtrasFragment.newInstance(position + 1);
+                return ExtrasFragment.newInstance(position + 1);
         }
         return null;
     }

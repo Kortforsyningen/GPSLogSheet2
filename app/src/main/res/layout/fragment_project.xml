@@ -88,7 +88,7 @@
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent" />
 
-    <TabHost
+    <android.support.v4.app.FragmentTabHost
         android:id="@+id/tabHost"
         android:layout_height="fill_parent"
         android:layout_width="wrap_content"
@@ -146,13 +146,13 @@
             </LinearLayout>
 
             <FrameLayout
-                android:id="@android:id/tabcontent"
+                android:id="@+id/setupstabcontent"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:padding="2dp" />
         </LinearLayout>
 
-    </TabHost>
+    </android.support.v4.app.FragmentTabHost>
 
     <TextView
         android:id="@+id/projectTextView"
