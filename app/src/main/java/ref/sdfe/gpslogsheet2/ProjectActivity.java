@@ -645,6 +645,7 @@ protected void onDestroy(){
          * number.
          */
         public static ProjectSettingsFragment newInstance(int sectionNumber) {
+            Log.i("ProjectSettingsFragment","newInstance");
             ProjectSettingsFragment fragment = new ProjectSettingsFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
@@ -657,6 +658,7 @@ protected void onDestroy(){
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             // OLDJO: Inflate the layout
+            Log.i("ProjectSettingsFragment","onCreateView");
             View rootView = inflater.inflate(R.layout.fragment_project, container, false);
 
             //Make this listen for changes in floating action button
@@ -684,7 +686,9 @@ protected void onDestroy(){
 
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    project.setModDate();
+                    //setModDate should perhaps be private to ProjectEntry
+                    //project.setModDate();
+
                 }
 
                 @Override
@@ -709,9 +713,13 @@ protected void onDestroy(){
                     } else {
                         projectNameError = false;
                     }
+                    if(projectNameField.getText().toString().equals(current_projectName)){
 
-                    project.setName(projectNameField.getText().toString());
-                    current_projectName = projectNameField.getText().toString();
+                    }else{
+                        project.setName(projectNameField.getText().toString());
+                        current_projectName = projectNameField.getText().toString();
+                    }
+
                 }
             });
             projectNameField.setFocusable(false);
@@ -726,13 +734,19 @@ protected void onDestroy(){
 
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    project.setModDate();
+                    //project.setModDate();
                 }
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    project.setOperator(operatorNameField.getText().toString());
-                    current_projectOperator = operatorNameField.getText().toString();
+                    if (operatorNameField.getText().toString().equals(current_projectOperator)){
+
+                    }else{
+                        project.setOperator(operatorNameField.getText().toString());
+                        current_projectOperator = operatorNameField.getText().toString();
+
+                    }
+
                 }
             });
             operatorNameField.setFocusable(false);
