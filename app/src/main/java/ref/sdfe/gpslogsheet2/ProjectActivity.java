@@ -179,6 +179,7 @@ public class ProjectActivity extends AppCompatActivity {
             }
         }catch(NullPointerException e){
             Log.i("Setups", "There are no setups 2.");
+
         }
 
         setupsListIDs = new ArrayList<>();
@@ -633,8 +634,9 @@ protected void onDestroy(){
          */
         private static final String ARG_SECTION_NUMBER = "1";
 
-        private SetupTabsHostParentFragment setupsTabHost;
+        private FragmentTabHost setupsTabHost;
         private List<Fragment> setupsFragmentsList;
+
         public ProjectSettingsFragment() {
 
         }
@@ -705,7 +707,8 @@ protected void onDestroy(){
                             projectNameField.setError("Project name must be unique.");
                             projectNameError = true;
                         }
-                        projectNameError = false;
+
+                        //projectNameError = false;
                     } else if (projectNameField.getText().toString().isEmpty()) {
                         projectNameField.setError("Project name cannot be empty.");
                         projectNameError = true;
@@ -791,16 +794,30 @@ protected void onDestroy(){
             projectTextView.setText(String.format(projectTextTemplate,
                     current_projectDate, current_projectModDate, current_projectEndDate));
 
+            initSetupTabHost(rootView);
+            return rootView;
+        }
+        private void initSetupTabHost(View view){
 
             // Setups
-            //setupsTabHost = (android.support.v4.app.FragmentTabHost) rootView.findViewById(R.id.tabHost);
-            //setupsTabHost.addTab(setupsTabHost.newTabSpec("1").setIndicator("Music"), SetupsFragment.class, null);
-            //setupsTabHost = (FragmentTabHost) rootView.findViewById(R.id.tabHost);
-            //setupsTabHost.addTab(setupsTabHost.newTabSpec("1").setIndicator("Music"), SetupsFragment.class, null);
-            //setupsTabHost = (SetupTabsHostParentFragment) rootView.findViewById(android.R.id.tabhost)
+            setupsTabHost = (FragmentTabHost) view.findViewById(android.R.id.tabhost);
+            setupsTabHost.setup(getActivity(), getChildFragmentManager(), android.R.id.tabcontent);
+
+            addSetupTab(1);
+            addSetupTab(2);
+            addSetupTab(3);
+            addSetupTab(4);
+            addSetupTab(5);
 
 
-            return rootView;
+        }
+        //private Boolean addSetupTab(ProjectEntry.Setup setup){
+        private Boolean addSetupTab(Integer id){
+            //Integer id = setup.getId();
+
+            setupsTabHost.addTab(setupsTabHost.newTabSpec(id.toString()).setIndicator(id.toString()), SetupsFragment.class, null);
+
+            return true;
         }
 
     }

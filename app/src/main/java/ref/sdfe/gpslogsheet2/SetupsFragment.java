@@ -1,10 +1,11 @@
 package ref.sdfe.gpslogsheet2;
 
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.util.Log;
 
 /**
  * Created by B028406 on 8/31/2017.
