@@ -1,5 +1,7 @@
 package ref.sdfe.gpslogsheet2;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -8,6 +10,7 @@ import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.apache.commons.net.ftp.FTPClient;
@@ -19,20 +22,56 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 
-public class UpdateActivity extends AppCompatActivity{
+public class UpdateActivity extends Activity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update);
-        new SyncDataFTP(this.getApplicationContext()).execute();
+
+        new SyncDataFTP(this).execute();
+
+        if (pd == null) {
+            finish(); //This caused a headache
+        }
+    }
+
+    private ProgressDialog pd;
+
+    private void showProgressDialog() {
+        if (pd == null) {
+            pd = new ProgressDialog(UpdateActivity.this);
+            pd.setTitle("Synchronizing");
+            pd.setMessage("Please wait...");
+            pd.setIndeterminate(true);
+            pd.setCancelable(false);
+        }
+        pd.show();
+    }
+
+    private void dismissProgressDialog() {
+        if (pd != null && pd.isShowing()) {
+            pd.dismiss();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        dismissProgressDialog();
+        super.onDestroy();
         finish();
     }
-    static class SyncDataFTP extends AsyncTask<Context, Integer, CharSequence> {
+
+    private class SyncDataFTP extends AsyncTask<Context, Integer, CharSequence> {
 
         private Context mContext;
-        private SyncDataFTP(Context context) {
-            mContext = context;
+        private ProgressDialog pd;
+        private Activity activity;
+
+        //private SyncDataFTP(Context context) {
+        private SyncDataFTP(Activity activity) {
+            this.activity = activity;
+            mContext = this.activity.getApplicationContext();
         }
 
         private String username = "";
@@ -56,6 +95,8 @@ public class UpdateActivity extends AppCompatActivity{
 
         @Override
         protected void onPreExecute() {
+            showProgressDialog();
+
             super.onPreExecute();
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
 
@@ -73,12 +114,15 @@ public class UpdateActivity extends AppCompatActivity{
             projects = prefs.getBoolean("switch_preference_projects",false);
             images = prefs.getBoolean("switch_preference_images",false);
             projects = prefs.getBoolean("switch_preference_projects",false);
+
+
         }
 
         @Override
         protected CharSequence doInBackground(Context... params) {
             // Check if anything is supposed to be updated at all:
             if (projects || alarms || antennas || fixedpoints || instruments || rods) {
+
 
                 db = DataBaseHandler.getInstance(mContext);
                 try {
@@ -410,6 +454,7 @@ public class UpdateActivity extends AppCompatActivity{
             else {
                 return "Choose what to update.";
             }
+
         }
         @Override
         protected void onProgressUpdate(Integer... values) {
@@ -423,6 +468,9 @@ public class UpdateActivity extends AppCompatActivity{
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(mContext, result, duration);
             toast.show();
+            dismissProgressDialog();
+            finish();
+
         }
     }
 }
