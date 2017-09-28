@@ -51,9 +51,15 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.StreamHandler;
+import java.util.zip.Inflater;
 
 import static android.R.layout.simple_list_item_1;
 
@@ -61,14 +67,14 @@ public class ProjectActivity extends AppCompatActivity {
 
     private SharedPreferences prefs;
     public static Integer lastOpenedProject;
-    public List<ProjectEntry> projectsList;
+    //public List<ProjectEntry> projectsList;
     public Context mContext;
     public static List<Integer> projectsListIDs;
     public static List<String> projectsListStrings;
 
     private DataBaseHandler db;
-    private EditText projectNameField;
-    private EditText operatorNameField;
+    //private EditText projectNameField;
+    //private EditText operatorNameField;
 
     static public ProjectEntry project;
     static public ProjectEntry project_backup; // so that changes can be discarded.
@@ -91,9 +97,10 @@ public class ProjectActivity extends AppCompatActivity {
     private static InputFilter numberFilter;
 
     // Setups
+    public static String current_setup;
     public ArrayAdapter setupsAdapter;
-    private List<Integer> setupsListIDs;
-    private List<String> setupsListStrings;
+    public List<Integer> setupsListIDs;
+    public List<String> setupsListStrings;
     private HashMap<Integer,ProjectEntry.Setup> setupsList;
 
     @Override
@@ -170,23 +177,33 @@ public class ProjectActivity extends AppCompatActivity {
         current_projectModDate = mod_date.toString();
 
         //Setups
-        HashMap<Integer,ProjectEntry.Setup> setups = project.getSetups();
-        try {
-            if (setups.isEmpty()) {
-                Log.i("Setups", "There are no setups.");
-            } else {
-                Log.i("Setups", "There are setups.");
-            }
-        }catch(NullPointerException e){
-            Log.i("Setups", "There are no setups 2.");
-
-        }
+//        HashMap<Integer,ProjectEntry.Setup> setups = project.getSetups();
+//        try {
+//            if (setups.isEmpty()) {
+//                Log.i("Setups", "There are no setups.");
+//            } else {
+//                Log.i("Setups", "There are setups.");
+//            }
+//        }catch(NullPointerException e){
+//            Log.i("Setups", "There are no setups 2.");
+//            project.addSetup(1);
+//
+//        }
 
         setupsListIDs = new ArrayList<>();
         setupsListStrings = new ArrayList<>();
 
         populateSetupsList();
+
+        //If there are no setups, add an empty one
+        if (setupsListIDs.isEmpty()){
+            project.addSetup(0);
+            populateSetupsList();
+        }
+
+
         setupsAdapter = new ArrayAdapter<>(this, simple_list_item_1, setupsListStrings);
+
 
         //LOCATION
 
@@ -221,7 +238,6 @@ public class ProjectActivity extends AppCompatActivity {
             public void onProviderDisabled(String provider) {}
         };
         String locationProvider = LocationManager.GPS_PROVIDER;
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
@@ -410,22 +426,33 @@ public class ProjectActivity extends AppCompatActivity {
 
     // TODO: setups list, and adapter to display them in the project activity.
     public void populateSetupsList(){
-        // Get readable database in order to get a list of projects
-        //db = DataBaseHandler.getInstance(getApplicationContext());
         setupsListIDs.clear();
         setupsListStrings.clear();
         setupsList = project.getSetups();
 
-        for (int i = 0; i < project.getSetupsCount(); i++) {
-            setupsListIDs.add(setupsList.get(i).getId());
-            setupsListStrings.add(setupsList.get(i).getFixedPoint());
+//        for (int i = 0; i < project.getSetupsCount(); i++) {
+//            setupsListIDs.add(setupsList.get(i).getId());
+//            setupsListStrings.add(setupsList.get(i).getFixedPoint());
+//        }
+//
+//        for (ProjectEntry.Setup setup : setupsList) {
+//            setupsListIDs.add(setup.getId());
+//            setupsListStrings.add(setup.getFixedPoint());
+//        }
+
+        // This makes the tabs appear in unsorted order.
+        for(Map.Entry<Integer,ProjectEntry.Setup> entry : setupsList.entrySet()){
+            Integer id = entry.getKey();
+            setupsListIDs.add(id);
+            setupsListStrings.add(entry.getValue().getFixedPoint());
         }
+
+
         try{
             setupsAdapter.notifyDataSetChanged();
         }catch (NullPointerException e){
 
         }
-        //db.close();
     }
 
     @Override
@@ -633,9 +660,9 @@ protected void onDestroy(){
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "1";
-
         private FragmentTabHost setupsTabHost;
         private List<Fragment> setupsFragmentsList;
+        private View rootView;
 
         public ProjectSettingsFragment() {
 
@@ -660,7 +687,7 @@ protected void onDestroy(){
                                  Bundle savedInstanceState) {
             // OLDJO: Inflate the layout
             Log.i("ProjectSettingsFragment","onCreateView");
-            View rootView = inflater.inflate(R.layout.fragment_project, container, false);
+            rootView = inflater.inflate(R.layout.fragment_project, container, false);
 
             //Make this listen for changes in floating action button
             FloatingActionButton fcb = (FloatingActionButton) rootView.findViewById(R.id.floatingCameraButton);
@@ -753,6 +780,16 @@ protected void onDestroy(){
             });
             operatorNameField.setFocusable(false);
 
+            Button addSetupButton = (Button) rootView.findViewById(R.id.add_tab);
+            addSetupButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // LOCADE CODE HERE
+                    Log.i("ProjectSettingsFragment", "Add Setup Button pressed!");
+                    addSetupTab();
+                }
+            });
+
             //Switch that toggles editing
             Switch editSwitch = (Switch) rootView.findViewById(R.id.edit_switch);
             editSwitch.setChecked(false);
@@ -802,22 +839,49 @@ protected void onDestroy(){
             // Setups
             setupsTabHost = (FragmentTabHost) view.findViewById(android.R.id.tabhost);
             setupsTabHost.setup(getActivity(), getChildFragmentManager(), android.R.id.tabcontent);
+            setupsTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+                                                      @Override
+                                                      public void onTabChanged(String tabId) {
+                                                          //Set current setup
+                                                          current_setup = tabId;
+                                                          Log.i("ProjectActivity","Current setup: " + tabId);
+                                                      }
 
-            addSetupTab(1);
-            addSetupTab(2);
-            addSetupTab(3);
-            addSetupTab(4);
-            addSetupTab(5);
+                                                  });
+
+            populateSetupTabHost();
 
 
         }
-        //private Boolean addSetupTab(ProjectEntry.Setup setup){
-        private Boolean addSetupTab(Integer id){
-            //Integer id = setup.getId();
-
-            setupsTabHost.addTab(setupsTabHost.newTabSpec(id.toString()).setIndicator(id.toString()), SetupsFragment.class, null);
-
-            return true;
+        private void populateSetupTabHost(){
+            //Are there any setups
+            if (project.getSetupsCount() > 0){
+                HashMap<Integer, ProjectEntry.Setup> setups = project.getSetups();
+                // For each setup (TODO: Find a way to sort this)
+                for(Map.Entry<Integer,ProjectEntry.Setup> entry : setups.entrySet()){
+                    Integer id = entry.getKey();
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("Id",id);
+                    setupsTabHost.addTab(setupsTabHost.newTabSpec(id.toString()).setIndicator(id.toString()), SetupsFragment.class, bundle);
+                    //setupsTabHost.getTabWidget().
+                }
+            }
+        }
+        // Add empty setup
+        private void addSetupTab(){
+            //Get the setups from the project.
+            HashMap<Integer,ProjectEntry.Setup> setups = project.getSetups();
+            // Find maximum ID and add one
+            Integer id = Collections.max(setups.keySet()) + 1;
+            project.addSetup(id);
+            Bundle bundle = new Bundle();
+            bundle.putInt("Id",id);
+            setupsTabHost.addTab(setupsTabHost.newTabSpec(id.toString()).setIndicator(id.toString()), SetupsFragment.class, bundle);
+            setupsTabHost.setCurrentTab(id);
+        }
+        public void refreshSetupTab(){
+            setupsTabHost.clearAllTabs();
+            populateSetupTabHost();
         }
 
     }

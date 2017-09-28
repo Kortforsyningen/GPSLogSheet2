@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.sql.Date;
+import java.util.GregorianCalendar;
 
 public class UpdateActivity extends Activity{
 
@@ -469,6 +471,11 @@ public class UpdateActivity extends Activity{
             Toast toast = Toast.makeText(mContext, result, duration);
             toast.show();
             dismissProgressDialog();
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+            final SharedPreferences.Editor editor = prefs.edit();
+
+            //This *might* get used to implement an auto update feature.
+            editor.putInt("lastUpdateDate", GregorianCalendar.DATE);
             finish();
 
         }

@@ -8,6 +8,8 @@ import com.google.gson.Gson;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by B028406 on 01-06-2017.
@@ -32,6 +34,19 @@ class ProjectEntry implements Cloneable{
         }
 
     }
+    public List<Integer> getSetupIDs() {
+        Log.i("ProjectEntry","getSetupIDs called");
+        List<Integer> IDs = null;
+        try{
+            for(Map.Entry<Integer,Setup> entry : setups.entrySet()){
+                IDs.add(entry.getKey());
+                Log.i("ProjectEntry","setupID added");
+            }
+            return IDs;
+        }catch (NullPointerException E){
+            return IDs;
+        }
+    }
 
     private HashMap<Integer,Setup> setups; //HasMap to store setups
 
@@ -42,6 +57,7 @@ class ProjectEntry implements Cloneable{
         this.id = id;
         this.startDate = System.currentTimeMillis();
         this.modDate = System.currentTimeMillis();
+        setups = new HashMap<>();
     }
 
     public String getJsonString() {
@@ -86,8 +102,13 @@ class ProjectEntry implements Cloneable{
         setModDate();
     }
 
-    public void addSetup(Setup setup){
+    public void addSetup(int id){
+        Setup setup = new Setup(id);
         this.setups.put(setup.getId(), setup);
+        setModDate();
+    }
+    public void removeSetup(int id){
+        this.setups.remove(id);
         setModDate();
     }
 
