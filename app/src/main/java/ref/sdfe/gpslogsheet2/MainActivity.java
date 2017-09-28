@@ -37,11 +37,28 @@ public class MainActivity extends AppCompatActivity {
     public ArrayAdapter adapter;
     public ListView listview;
     public SharedPreferences.Editor editor;
-    public Intent intent;
+    public SharedPreferences prefs;
     public View convertView;
 
+    //Projects
+    private Integer allowProject;
     private List<Integer> projectsListIDs;
     private List<String> projectsListStrings;
+
+    //Fixedpoints
+    private List<String> gpsNames;
+    private List<String> hsNames;
+    private List<Double> x;
+    private List<Double> y;
+
+    //Instruments
+
+    //Rods
+
+    //Antennae
+
+    //Alarms
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +68,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mContext = getApplicationContext();
         // Get shared preferences
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         lastOpenedProject = prefs.getInt("lastOpenedProject", 0);
+        allowProject = prefs.getInt("allowProject", 0);
         editor = prefs.edit();
+
+        //If the there has been an update ever.
+        if (prefs.getInt("lastUpdateDate",0) > 0){
+            populateLists();
+            allowProject = 1;
+            editor.putInt("allowProject", 1);
+        }
+
 
 
         // PERMISSIONS!
@@ -126,6 +152,18 @@ public class MainActivity extends AppCompatActivity {
         }
         db.close();
     }
+    public void populateLists(){
+        // Get readable database in order to get a list of projects
+        db = DataBaseHandler.getInstance(getApplicationContext());
+
+        List<FixedpointEntry> fixedpoints = db.getAllFixedpointEntries();
+        List<InstrumentEntry> instruments = db.getAllInstrumentEntries();
+        List<RodEntry> rods = db.getAllRodEntries();
+        List<AlarmEntry> alarms = db.getAllAlarmEntries();
+        List<AntennaEntry> antennae = db.getAllAntennaEntries();
+
+        db.close();
+    }
 
     /** Called when the user clicks the settings button */
     public void openSettings(View view) {
@@ -153,12 +191,19 @@ public class MainActivity extends AppCompatActivity {
     }
     /** Called when the user clicks the New Project button */
     public void newProject(View view) {
-        // TODO: clear lastOpenedProject? Or do this elsewhere?
-        editor.putInt("lastOpenedProject", -1);
-        editor.commit();
+        Log.i("MainActivity","allowProject: " + allowProject.toString());
+        Log.i("MainActivity","lastUpdateDate: " + prefs.getInt("lastUpdateDate",0));
+        if (allowProject.equals(1)){
+            // TODO: clear lastOpenedProject? Or do this elsewhere?
+            editor.putInt("lastOpenedProject", -1);
+            editor.commit();
 
-        Intent intent = new Intent(this, ProjectActivity.class);
-        startActivity(intent);
+            Intent intent = new Intent(this, ProjectActivity.class);
+            startActivity(intent);
+        }else{
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        }
     }
     @Override
     public void onStart(){
@@ -170,6 +215,14 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         populateProjectList();
         adapter.notifyDataSetChanged();
+
+        //If the there has been an update ever.
+        if (prefs.getInt("lastUpdateDate",0) > 0){
+            populateLists();
+            allowProject = 1;
+            editor.putInt("allowProject", 1);
+            editor.commit();
+        }
     }
     @Override
     public void onDestroy(){

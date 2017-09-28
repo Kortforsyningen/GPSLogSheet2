@@ -4,6 +4,7 @@ package ref.sdfe.gpslogsheet2;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -95,6 +97,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        // Message user that the app has not gotten information from server yet.
+        if (prefs.getInt("projectAllowed",0) < 1){
+            int duration = Toast.LENGTH_SHORT;
+            String toast_message = "Please perform first time setup before continuing.";
+            Toast toast = Toast.makeText(getApplicationContext(),toast_message, duration);
+            toast.show();
+        }
     }
 
     /**

@@ -476,6 +476,7 @@ public class UpdateActivity extends Activity{
 
             //This *might* get used to implement an auto update feature.
             editor.putInt("lastUpdateDate", GregorianCalendar.DATE);
+            editor.commit();
             finish();
 
         }

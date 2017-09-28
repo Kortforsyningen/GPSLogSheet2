@@ -742,6 +742,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
                 fixedpointList.add(fixedpointEntry);
             } while (cursor.moveToNext());
         }
+        cursor.close();
         return fixedpointList;
     }
 
