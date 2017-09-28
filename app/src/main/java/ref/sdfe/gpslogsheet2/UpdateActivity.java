@@ -91,7 +91,6 @@ public class UpdateActivity extends Activity{
         private Boolean rods = false;
 
         private int reply;
-        int duration = Toast.LENGTH_SHORT;
 
         DataBaseHandler db;
 
@@ -108,12 +107,12 @@ public class UpdateActivity extends Activity{
             host = prefs.getString("credentials_ftp_host", "");
             path = prefs.getString("credentials_ftp_path", "");
 
-            alarms = prefs.getBoolean("switch_preference_alarms",false);
-            antennas = prefs.getBoolean("switch_preference_antennas",false);
-            fixedpoints = prefs.getBoolean("switch_preference_points",false);
-            instruments = prefs.getBoolean("switch_preference_instruments",false);
-            rods = prefs.getBoolean("switch_preference_rods",false);
-            projects = prefs.getBoolean("switch_preference_projects",false);
+            alarms = prefs.getBoolean("switch_preference_alarms",true);
+            antennas = prefs.getBoolean("switch_preference_antennas",true);
+            fixedpoints = prefs.getBoolean("switch_preference_points",true);
+            instruments = prefs.getBoolean("switch_preference_instruments",true);
+            rods = prefs.getBoolean("switch_preference_rods",true);
+            //
             images = prefs.getBoolean("switch_preference_images",false);
             projects = prefs.getBoolean("switch_preference_projects",false);
 

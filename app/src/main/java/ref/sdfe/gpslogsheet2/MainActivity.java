@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private List<String> projectsListStrings;
 
     //Fixedpoints
+    private List<FixedpointEntry> fixedpoints;
     private List<String> gpsNames;
     private List<String> hsNames;
     private List<Double> x;
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         // Get readable database in order to get a list of projects
         db = DataBaseHandler.getInstance(getApplicationContext());
 
-        List<FixedpointEntry> fixedpoints = db.getAllFixedpointEntries();
+        fixedpoints = db.getAllFixedpointEntries();
         List<InstrumentEntry> instruments = db.getAllInstrumentEntries();
         List<RodEntry> rods = db.getAllRodEntries();
         List<AlarmEntry> alarms = db.getAllAlarmEntries();
