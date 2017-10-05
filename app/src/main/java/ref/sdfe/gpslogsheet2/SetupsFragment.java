@@ -18,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -373,8 +374,15 @@ public class SetupsFragment extends Fragment {
                                 location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                                 latitude = location.getLatitude();
                                 longitude = location.getLongitude();
-                                locationFound = true;
+                                if (!locationFound){
+                                    int duration = Toast.LENGTH_SHORT;
+                                    String toast_message = "Location is now available.";
+                                    Toast toast = Toast.makeText(getContext(),toast_message, duration);
+                                    toast.show();
+                                    locationFound = true;
+                                }
                                 Log.i("getLocation()", "Latitude: " + latitude + ", Longitude: " + longitude);
+
                             }
 
                             @Override
@@ -415,7 +423,13 @@ public class SetupsFragment extends Fragment {
                                     location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                                     latitude = location.getLatitude();
                                     longitude = location.getLongitude();
-                                    locationFound = true;
+                                    if (!locationFound) {
+                                        int duration = Toast.LENGTH_SHORT;
+                                        String toast_message = "Location is now available.";
+                                        Toast toast = Toast.makeText(getContext(), toast_message, duration);
+                                        toast.show();
+                                        locationFound = true;
+                                    }
                                     Log.i("getLocation()", "Latitude: " + latitude + ", Longitude: " + longitude);
                                 }
 
@@ -468,12 +482,17 @@ public class SetupsFragment extends Fragment {
 
             fixedPointSpinner.setSelection(getIndex(fixedPointSpinner, gpsNames.get(tempIndex)));
 
+
             //TODO: Also display distance to said point.
             //TODO: Make spinner select that point
             //TODO: Perhaps do this all in a dialog so the user can choose to abort?
 
         }else{
             //TODO: Message that location has not been found yet... beg for patience! :D
+            int duration = Toast.LENGTH_SHORT;
+            String toast_message = "Location not yet available.";
+            Toast toast = Toast.makeText(getContext(),toast_message, duration);
+            toast.show();
         }
     }
 }

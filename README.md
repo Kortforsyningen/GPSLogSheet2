@@ -45,7 +45,7 @@ Current progress:
 - [ ] Generation of .bat scripts
 - [ ] Upload of projects to server
 - [ ] Camera integration
-- [ ] GPS integration
+- [x] GPS integration
 - [ ] Upload of projects (with pictures) to server
 - [ ] GUI reevaluation and optimization
 - [ ] (Support for other postprocessing tool than TEQC)
