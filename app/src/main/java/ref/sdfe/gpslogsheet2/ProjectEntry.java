@@ -167,6 +167,9 @@ class ProjectEntry implements Cloneable{
         public int getInstrumentId() {
             return instrumentId;
         }
+        public void setInstrumentId(int Id){
+            this.instrumentId = Id;
+        }
 
         public String getInstrument() {
             return instrument;

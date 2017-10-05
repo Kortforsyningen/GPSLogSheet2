@@ -91,7 +91,8 @@ public class ProjectActivity extends AppCompatActivity {
 
     private static String projectTextTemplate;
 
-    private static Boolean locationPermitted;
+    public static Boolean locationPermitted;
+    public static LocationManager locationManager;
 
 
     private static InputFilter nameFilter;
@@ -235,11 +236,6 @@ public class ProjectActivity extends AppCompatActivity {
             locationPermitted = true;
             Log.i("ProjectActivity", "Location permitted.");
         }
-
-
-        // Acquire a reference to the system Location Manager
-        LocationManager locationManager = (LocationManager)
-                this.getSystemService(Context.LOCATION_SERVICE);
 
         // Define a listener that responds to location updates
         LocationListener locationListener = new LocationListener() {

@@ -100,6 +100,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
+        //TODO: Fix showing when not needed. Eg. set projectAllowed to 1 somewhere...
         // Message user that the app has not gotten information from server yet.
         if (prefs.getInt("projectAllowed",0) < 1){
             int duration = Toast.LENGTH_SHORT;
