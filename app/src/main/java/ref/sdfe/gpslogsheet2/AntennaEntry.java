@@ -35,4 +35,8 @@ public class AntennaEntry{
     public void setCode(String code) {
         this.antenna_code = code;
     }
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

@@ -27,4 +27,8 @@ public class InstrumentEntry{
     public void setName(String name) {
         this.instrument_name = name;
     }
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

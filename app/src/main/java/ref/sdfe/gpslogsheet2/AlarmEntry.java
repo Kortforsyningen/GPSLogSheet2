@@ -27,4 +27,8 @@ public class AlarmEntry{
     public void setName(String name) {
         this.alarm_name = name;
     }
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

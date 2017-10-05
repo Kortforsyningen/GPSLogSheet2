@@ -21,6 +21,7 @@ import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 
 import android.support.v4.app.Fragment;
@@ -101,7 +102,21 @@ public class ProjectActivity extends AppCompatActivity {
     public ArrayAdapter setupsAdapter;
     public List<Integer> setupsListIDs;
     public List<String> setupsListStrings;
-    private HashMap<Integer,ProjectEntry.Setup> setupsList;
+    public HashMap<Integer, ProjectEntry.Setup> setupsList;
+
+    // Lists
+    static public List<Double> eastings = new ArrayList<>();
+    static public List<Double> northings = new ArrayList<>();
+    static public List<String> gpsNames = new ArrayList<>();
+    static public List<String> hsNames = new ArrayList<>();
+    static public List<String> antennaNames = new ArrayList<>();
+    static public List<String> alarmNames = new ArrayList<>();
+    static public List<String> instrumentNames = new ArrayList<>();
+
+    static public List<FixedpointEntry> fixedpointEntries;
+    static public List<AlarmEntry> alarmEntries;
+    static public List<AntennaEntry> antennaEntries;
+    static public List<InstrumentEntry> instrumentEntries;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +135,7 @@ public class ProjectActivity extends AppCompatActivity {
 
         // Get readable database in order to get a list of projects
         db = DataBaseHandler.getInstance(getApplicationContext());
+        getData();
 
         //Get list of projects
         List<ProjectEntry> projectsList = db.getAllProjectEntries();
@@ -133,31 +149,33 @@ public class ProjectActivity extends AppCompatActivity {
 
         //Check for open/selected project
         lastOpenedProject = prefs.getInt("lastOpenedProject", 0);
-        if (lastOpenedProject > 0){
+        if (lastOpenedProject > 0) {
             project = db.getProjectEntry(lastOpenedProject);
+            Log.i("ProjectActivity", "Project loaded, id: " + lastOpenedProject.toString());
             projectNameError = false;
 
-            try{
+            try {
                 project_backup = (ProjectEntry) project.clone();
-            }catch(CloneNotSupportedException e){
-                Log.i("ProjectActivity","Cloning not supported :/");
+            } catch (CloneNotSupportedException e) {
+                Log.i("ProjectActivity", "Cloning not supported :/");
             }
 
-        }else{
+        } else {
             //generate new id number for project.
             Integer id = 0;
             try {
                 id = Collections.max(projectsListIDs) + 1;
-            }catch(NoSuchElementException e){
+            } catch (NoSuchElementException e) {
                 id = 1;
             }
 
 
             project = new ProjectEntry(id);
-            try{
+            Log.i("ProjectActivity", "New Project, id: " + id.toString());
+            try {
                 project_backup = (ProjectEntry) project.clone();
-            }catch(CloneNotSupportedException e){
-                Log.i("ProjectActivity","Cloning not supported :/");
+            } catch (CloneNotSupportedException e) {
+                Log.i("ProjectActivity", "Cloning not supported :/");
             }
             project.setName("");
             projectNameError = true;
@@ -165,7 +183,7 @@ public class ProjectActivity extends AppCompatActivity {
 
         // Load project data into local variables
         current_projectName = project.getName();
-        Log.i("ProjectActivity",current_projectName);
+        Log.i("ProjectActivity", current_projectName);
         current_projectOperator = project.getOperator();
 
         // Get project dates and convert them to strings
@@ -196,7 +214,7 @@ public class ProjectActivity extends AppCompatActivity {
         populateSetupsList();
 
         //If there are no setups, add an empty one
-        if (setupsListIDs.isEmpty()){
+        if (setupsListIDs.isEmpty()) {
             project.addSetup(0);
             populateSetupsList();
         }
@@ -212,10 +230,10 @@ public class ProjectActivity extends AppCompatActivity {
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             locationPermitted = false;
-            Log.i("ProjectActivity","Location not permitted.");
-        }else{
+            Log.i("ProjectActivity", "Location not permitted.");
+        } else {
             locationPermitted = true;
-            Log.i("ProjectActivity","Location permitted.");
+            Log.i("ProjectActivity", "Location permitted.");
         }
 
 
@@ -231,11 +249,14 @@ public class ProjectActivity extends AppCompatActivity {
                 //makeUseOfNewLocation(location);
             }
 
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
 
-            public void onProviderEnabled(String provider) {}
+            public void onProviderEnabled(String provider) {
+            }
 
-            public void onProviderDisabled(String provider) {}
+            public void onProviderDisabled(String provider) {
+            }
         };
         String locationProvider = LocationManager.GPS_PROVIDER;
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -270,9 +291,9 @@ public class ProjectActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                if (projectNameError){
+                if (projectNameError) {
                     // Project has invalid name
-                    Log.i("ProjectActivity","back pressed! Name Error!");
+                    Log.i("ProjectActivity", "back pressed! Name Error!");
                     final Dialog dialog = new Dialog(ProjectActivity.this);
                     LayoutInflater inflater = getLayoutInflater();
                     View convertView = inflater.inflate(R.layout.discard_dialog, new LinearLayoutCompat(mContext), false);
@@ -280,8 +301,8 @@ public class ProjectActivity extends AppCompatActivity {
                     dialog.setCancelable(true);
                     dialog.setTitle(R.string.invalid_name_query);
 
-                    Button cancel_button = (Button)dialog.findViewById(R.id.cancel_button);
-                    Button discard_button = (Button)dialog.findViewById(R.id.discard_button);
+                    Button cancel_button = (Button) dialog.findViewById(R.id.cancel_button);
+                    Button discard_button = (Button) dialog.findViewById(R.id.discard_button);
 
                     cancel_button.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -314,7 +335,7 @@ public class ProjectActivity extends AppCompatActivity {
 
                     dialog.show();
 
-                }else {
+                } else {
 
                     final Dialog dialog = new Dialog(ProjectActivity.this);
                     LayoutInflater inflater = getLayoutInflater();
@@ -425,32 +446,21 @@ public class ProjectActivity extends AppCompatActivity {
     }
 
     // TODO: setups list, and adapter to display them in the project activity.
-    public void populateSetupsList(){
+    public void populateSetupsList() {
         setupsListIDs.clear();
         setupsListStrings.clear();
         setupsList = project.getSetups();
 
-//        for (int i = 0; i < project.getSetupsCount(); i++) {
-//            setupsListIDs.add(setupsList.get(i).getId());
-//            setupsListStrings.add(setupsList.get(i).getFixedPoint());
-//        }
-//
-//        for (ProjectEntry.Setup setup : setupsList) {
-//            setupsListIDs.add(setup.getId());
-//            setupsListStrings.add(setup.getFixedPoint());
-//        }
-
-        // This makes the tabs appear in unsorted order.
-        for(Map.Entry<Integer,ProjectEntry.Setup> entry : setupsList.entrySet()){
+        for (Map.Entry<Integer, ProjectEntry.Setup> entry : setupsList.entrySet()) {
             Integer id = entry.getKey();
             setupsListIDs.add(id);
             setupsListStrings.add(entry.getValue().getFixedPoint());
         }
 
 
-        try{
+        try {
             setupsAdapter.notifyDataSetChanged();
-        }catch (NullPointerException e){
+        } catch (NullPointerException e) {
 
         }
     }
@@ -461,7 +471,7 @@ public class ProjectActivity extends AppCompatActivity {
         Log.i("ProjectActivity", "projectNameError = " + projectNameError.toString());
         final SharedPreferences.Editor editor = prefs.edit();
 
-        if (project_backup.getModDate() == project.getModDate()){
+        if (project_backup.getModDate() == project.getModDate()) {
             // No changes detected
             Log.i("ProjectActivity", "No changes detected.");
             finish();
@@ -505,7 +515,7 @@ public class ProjectActivity extends AppCompatActivity {
 
             dialog.show();
 
-        }else {
+        } else {
             Log.i("ProjectActivity", "back pressed! Dialog coming up!");
             final Dialog dialog = new Dialog(ProjectActivity.this);
             LayoutInflater inflater = getLayoutInflater();
@@ -546,26 +556,28 @@ public class ProjectActivity extends AppCompatActivity {
     }
 
 
-@Override
-protected void onDestroy(){
+    @Override
+    protected void onDestroy() {
         super.onDestroy();
 
         //TODO: save project to database
-        if ( save ) {
+        if (save) {
             // Get application context
             mContext = getApplicationContext();
+
+            //Log.i("ProjectActivity", "Project JSON: " + project.getJsonString());
 
             // Get readable database in order to get a list of projects
             //db = DataBaseHandler.getInstance(mContext);
 
             //If project ID already in database
-            if ( db.getAllProjectIDs().contains(project.getId())){
+            if (db.getAllProjectIDs().contains(project.getId())) {
                 db.updateProjectEntry(project);
-            }else {
+            } else {
                 // else it is a new project
-                if (db.getAllProjectNames().contains(project.getName())){
+                if (db.getAllProjectNames().contains(project.getName())) {
                     Log.i("SQL", "Tried to save new project with non-unique name");
-                }else{
+                } else {
                     db.addProjectEntry(project);
                 }
             }
@@ -589,13 +601,13 @@ protected void onDestroy(){
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            Log.i("Toolbar","Options pressed");
+            Log.i("Toolbar", "Options pressed");
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
             return true;
         }
         if (id == R.id.action_delete) {
-            Log.i("Toolbar","Delete pressed");
+            Log.i("Toolbar", "Delete pressed");
             //TODO: create popup with warning to delete
 
             final Dialog delete_dialog = new Dialog(ProjectActivity.this);
@@ -605,20 +617,20 @@ protected void onDestroy(){
             delete_dialog.setCancelable(true);
             delete_dialog.setTitle("WARNING!");
 
-            Button cancel_button = (Button)delete_dialog.findViewById(R.id.cancel_button);
-            final Button delete_button = (Button)delete_dialog.findViewById(R.id.delete_button);
+            Button cancel_button = (Button) delete_dialog.findViewById(R.id.cancel_button);
+            final Button delete_button = (Button) delete_dialog.findViewById(R.id.delete_button);
 
             //Switch that toggles delete button
-            Switch editSwitch = (Switch)delete_dialog.findViewById(R.id.delete_switch);
+            Switch editSwitch = (Switch) delete_dialog.findViewById(R.id.delete_switch);
             editSwitch.setChecked(false);
             editSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (isChecked) {
                         delete_button.setEnabled(true);
-                        Log.i("ProjectActivity","Delete switch on :O !");
+                        Log.i("ProjectActivity", "Delete switch on :O !");
                     } else {
                         delete_button.setEnabled(false);
-                        Log.i("ProjectActivity","Delete switch off!");
+                        Log.i("ProjectActivity", "Delete switch off!");
                     }
                 }
             });
@@ -634,7 +646,7 @@ protected void onDestroy(){
                 public void onClick(View v) {
 
                     // DELETE CODE HERE
-                    Log.i("ProjectActivity","TODO: DELETION");
+                    Log.i("ProjectActivity", "TODO: DELETION");
                     db.deleteProject(project);
                     delete_dialog.dismiss();
                     final SharedPreferences.Editor editor = prefs.edit();
@@ -654,7 +666,7 @@ protected void onDestroy(){
 
 
     // OLDJO: A Project setting fragment
-    public static class ProjectSettingsFragment extends Fragment{
+    public static class ProjectSettingsFragment extends Fragment {
         /**
          * The fragment argument representing the section number for this
          * fragment.
@@ -673,7 +685,7 @@ protected void onDestroy(){
          * number.
          */
         public static ProjectSettingsFragment newInstance(int sectionNumber) {
-            Log.i("ProjectSettingsFragment","newInstance");
+            Log.i("ProjectSettingsFragment", "newInstance");
             ProjectSettingsFragment fragment = new ProjectSettingsFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
@@ -686,7 +698,7 @@ protected void onDestroy(){
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             // OLDJO: Inflate the layout
-            Log.i("ProjectSettingsFragment","onCreateView");
+            Log.i("ProjectSettingsFragment", "onCreateView");
             rootView = inflater.inflate(R.layout.fragment_project, container, false);
 
             //Make this listen for changes in floating action button
@@ -742,9 +754,9 @@ protected void onDestroy(){
                     } else {
                         projectNameError = false;
                     }
-                    if(projectNameField.getText().toString().equals(current_projectName)){
+                    if (projectNameField.getText().toString().equals(current_projectName)) {
 
-                    }else{
+                    } else {
                         project.setName(projectNameField.getText().toString());
                         current_projectName = projectNameField.getText().toString();
                     }
@@ -768,9 +780,9 @@ protected void onDestroy(){
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    if (operatorNameField.getText().toString().equals(current_projectOperator)){
+                    if (operatorNameField.getText().toString().equals(current_projectOperator)) {
 
-                    }else{
+                    } else {
                         project.setOperator(operatorNameField.getText().toString());
                         current_projectOperator = operatorNameField.getText().toString();
 
@@ -834,52 +846,62 @@ protected void onDestroy(){
             initSetupTabHost(rootView);
             return rootView;
         }
-        private void initSetupTabHost(View view){
 
+        // Tabs with setups
+        private void initSetupTabHost(View view) {
             // Setups
             setupsTabHost = (FragmentTabHost) view.findViewById(android.R.id.tabhost);
             setupsTabHost.setup(getActivity(), getChildFragmentManager(), android.R.id.tabcontent);
             setupsTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
-                                                      @Override
-                                                      public void onTabChanged(String tabId) {
-                                                          //Set current setup
-                                                          current_setup = tabId;
-                                                          Log.i("ProjectActivity","Current setup: " + tabId);
-                                                      }
+                @Override
+                public void onTabChanged(String tabId) {
+                    //Set current setup
+                    current_setup = tabId;
+                    Log.i("ProjectActivity", "Current setup: " + tabId);
+                }
 
-                                                  });
+            });
 
             populateSetupTabHost();
-
-
         }
-        private void populateSetupTabHost(){
+
+        private void populateSetupTabHost() {
             //Are there any setups
-            if (project.getSetupsCount() > 0){
+            if (project.getSetupsCount() > 0) {
                 HashMap<Integer, ProjectEntry.Setup> setups = project.getSetups();
-                // For each setup (TODO: Find a way to sort this)
-                for(Map.Entry<Integer,ProjectEntry.Setup> entry : setups.entrySet()){
-                    Integer id = entry.getKey();
+                List<ProjectEntry.Setup> setupsSorted = new ArrayList<>(setups.values());
+
+                // Sort
+                Collections.sort(setupsSorted, new Comparator<ProjectEntry.Setup>() {
+                    @Override
+                    public int compare(ProjectEntry.Setup o1, ProjectEntry.Setup o2) {
+                        return o1.getId() - o2.getId();
+                    }
+                });
+
+                for (ProjectEntry.Setup s : setupsSorted){
+                    Integer id = s.getId();
                     Bundle bundle = new Bundle();
-                    bundle.putInt("Id",id);
+                    bundle.putInt("Id", id);
                     setupsTabHost.addTab(setupsTabHost.newTabSpec(id.toString()).setIndicator(id.toString()), SetupsFragment.class, bundle);
-                    //setupsTabHost.getTabWidget().
                 }
             }
         }
+
         // Add empty setup
-        private void addSetupTab(){
+        private void addSetupTab() {
             //Get the setups from the project.
-            HashMap<Integer,ProjectEntry.Setup> setups = project.getSetups();
+            HashMap<Integer, ProjectEntry.Setup> setups = project.getSetups();
             // Find maximum ID and add one
             Integer id = Collections.max(setups.keySet()) + 1;
             project.addSetup(id);
             Bundle bundle = new Bundle();
-            bundle.putInt("Id",id);
+            bundle.putInt("Id", id);
             setupsTabHost.addTab(setupsTabHost.newTabSpec(id.toString()).setIndicator(id.toString()), SetupsFragment.class, bundle);
             setupsTabHost.setCurrentTab(id);
         }
-        public void refreshSetupTab(){
+
+        public void refreshSetupTab() {
             setupsTabHost.clearAllTabs();
             populateSetupTabHost();
         }
@@ -887,6 +909,80 @@ protected void onDestroy(){
     }
 
 
+    private void getData() {
+
+        //Clear old values
+        try {
+            gpsNames.clear();
+            hsNames.clear();
+            eastings.clear();
+            northings.clear();
+            alarmNames.clear();
+            antennaNames.clear();
+            instrumentNames.clear();
+        } catch (NullPointerException e) {
+            Log.i("ProjectActivity","getData(): Empty lists");
+        }
+
+        //Get readable database in order to get a list of projects
+        //db = DataBaseHandler.getInstance(getApplicationContext());
+        fixedpointEntries = db.getAllFixedpointEntries();
+        alarmEntries = db.getAllAlarmEntries();
+        antennaEntries = db.getAllAntennaEntries();
+        instrumentEntries = db.getAllInstrumentEntries();
+
+        //Add dummies so spinner can show empty
+        fixedpointEntries.add(new FixedpointEntry(-1,"","",0,0));
+        alarmEntries.add(new AlarmEntry(-1,""));
+        antennaEntries.add(new AntennaEntry(-1,"",""));
+        instrumentEntries.add(new InstrumentEntry(-1,""));
+
+        //Sorting
+        Collections.sort(fixedpointEntries, new Comparator<FixedpointEntry>() {
+            @Override
+            public int compare(FixedpointEntry o1, FixedpointEntry o2) {
+                return o1.getGPSName().compareTo(o2.getGPSName());
+            }
+        });
+        Collections.sort(alarmEntries, new Comparator<AlarmEntry>() {
+            @Override
+            public int compare(AlarmEntry o1, AlarmEntry o2) {
+                return o1.alarm_id - o2.alarm_id;
+            }
+        });
+        Collections.sort(antennaEntries, new Comparator<AntennaEntry>() {
+            @Override
+            public int compare(AntennaEntry o1, AntennaEntry o2) {
+                return o1.antenna_id - o2.antenna_id;
+            }
+        });
+        Collections.sort(instrumentEntries, new Comparator<InstrumentEntry>() {
+            @Override
+            public int compare(InstrumentEntry o1, InstrumentEntry o2) {
+                return o1.instrument_id - o2.instrument_id;
+            }
+        });
+
+        //Fixedpoints
+        for (int i = 0; i < db.getFixedpointsCount(); i++) {
+            gpsNames.add(i, fixedpointEntries.get(i).getGPSName());
+            hsNames.add(i, fixedpointEntries.get(i).getHSName());
+            eastings.add(i, fixedpointEntries.get(i).getEasting());
+            northings.add(i, fixedpointEntries.get(i).getNorthing());
+        }
+
+        for (int i = 0; i < db.getAlarmsCount(); i++) {
+            alarmNames.add(i, alarmEntries.get(i).getName());
+        }
+        for (int i = 0; i < db.getAntennaeCount(); i++) {
+            antennaNames.add(i, antennaEntries.get(i).getName());
+        }
+        for (int i = 0; i < db.getInstrumentsCount(); i++) {
+            instrumentNames.add(i, instrumentEntries.get(i).getName());
+        }
+        Log.i("SetupsFragment", "Loaded " + instrumentNames.size() + " instruments, "
+                + alarmNames.size() + " alarms, and "
+                + gpsNames.size() + " fixedpoints");
+    }
 
 }
-

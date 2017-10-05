@@ -55,4 +55,8 @@ public class FixedpointEntry{
     public void setNorthing(double northing) {
         this.fixedpoint_northing = northing;
     }
+    @Override
+    public String toString() {
+        return getGPSName();
+    }
 }

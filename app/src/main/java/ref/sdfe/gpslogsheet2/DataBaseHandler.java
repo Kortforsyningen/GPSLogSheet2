@@ -259,7 +259,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         return projectNamesList;
     }
 
-    // Get list of all projects names
+    // Get list of all projects IDs
     public List<Integer> getAllProjectIDs() {
         List<Integer> projectIDsList = new ArrayList<Integer>();
         // Select all query

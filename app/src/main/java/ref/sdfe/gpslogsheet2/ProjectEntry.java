@@ -47,9 +47,7 @@ class ProjectEntry implements Cloneable{
             return IDs;
         }
     }
-
     private HashMap<Integer,Setup> setups; //HasMap to store setups
-
     public ProjectEntry(int id) {
         /*
         * This constructor automatically gets current date
@@ -59,12 +57,10 @@ class ProjectEntry implements Cloneable{
         this.modDate = System.currentTimeMillis();
         setups = new HashMap<>();
     }
-
     public String getJsonString() {
         Gson gson = new Gson();
         return gson.toJson(this);
     }
-
     public long getModDate() {
         return modDate;
     }
@@ -101,7 +97,6 @@ class ProjectEntry implements Cloneable{
         this.name = name;
         setModDate();
     }
-
     public void addSetup(int id){
         Setup setup = new Setup(id);
         this.setups.put(setup.getId(), setup);
@@ -111,18 +106,16 @@ class ProjectEntry implements Cloneable{
         this.setups.remove(id);
         setModDate();
     }
-
     // OLDJO: Added this so that Project activity can store an unaltered copy.
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
 
-
-
     class Setup{
 
         private HashMap<Integer,Observation> observations; //HashMap to store observations
         private int id;
+        private int fixedPointId;
         private String fixedPoint;
         private String hsName;
         private int instrumentId;
@@ -146,6 +139,12 @@ class ProjectEntry implements Cloneable{
         public int getId() {
             return id;
         }
+        public Integer getFixedPointId() {
+            return fixedPointId;
+        }
+        public void setFixedPointId(int id) {
+            this.fixedPointId = id;
+        }
 
         public String getFixedPoint() {
             return fixedPoint;
@@ -153,7 +152,7 @@ class ProjectEntry implements Cloneable{
 
         public void setFixedPoint(String fixedPoint) {
             this.fixedPoint = fixedPoint;
-            setModDate();
+            //setModDate();
         }
 
         public String getHsName() {
@@ -162,7 +161,7 @@ class ProjectEntry implements Cloneable{
 
         public void setHsName(String hsName) {
             this.hsName = hsName;
-            setModDate();
+            //setModDate();
         }
 
         public int getInstrumentId() {
@@ -175,7 +174,7 @@ class ProjectEntry implements Cloneable{
 
         public void setInstrument(String instrument) {
             this.instrument = instrument;
-            setModDate();
+            //setModDate();
         }
 
         public int getAlarmId() {
@@ -184,7 +183,7 @@ class ProjectEntry implements Cloneable{
 
         public void setAlarmId(int alarmId) {
             this.alarmId = alarmId;
-            setModDate();
+            //setModDate();
         }
 
         public String getAlarm() {
@@ -193,7 +192,7 @@ class ProjectEntry implements Cloneable{
 
         public void setAlarm(String alarm) {
             this.alarm = alarm;
-            setModDate();
+            //setModDate();
         }
 
         public int getAntennaId() {
@@ -202,7 +201,7 @@ class ProjectEntry implements Cloneable{
 
         public void setAntennaId(int antennaId) {
             this.antennaId = antennaId;
-            setModDate();
+            //setModDate();
         }
 
         public String getAntenna() {
@@ -211,7 +210,7 @@ class ProjectEntry implements Cloneable{
 
         public void setAntenna(String antenna) {
             this.antenna = antenna;
-            setModDate();
+            //setModDate();
         }
 
         public String getImages() {
@@ -220,7 +219,7 @@ class ProjectEntry implements Cloneable{
 
         public void setImages(String images) {
             this.images = images;
-            setModDate();
+            //setModDate();
         }
 
         public Boolean getVerticalToARP() {
@@ -229,7 +228,7 @@ class ProjectEntry implements Cloneable{
 
         public void setVerticalToARP(Boolean verticalToARP) {
             this.verticalToARP = verticalToARP;
-            setModDate();
+            //setModDate();
         }
 
         public Boolean getUsingRod() {
@@ -238,7 +237,7 @@ class ProjectEntry implements Cloneable{
 
         public void setUsingRod(Boolean usingRod) {
             this.usingRod = usingRod;
-            setModDate();
+            //setModDate();
         }
 
         public double getAntennaHeight() {
@@ -247,7 +246,7 @@ class ProjectEntry implements Cloneable{
 
         public void setAntennaHeight(double antennaHeight) {
             this.antennaHeight = antennaHeight;
-            setModDate();
+            //setModDate();
         }
 
         public double getMaxDeviation() {
@@ -256,16 +255,16 @@ class ProjectEntry implements Cloneable{
 
         public void setMaxDeviation(double maxDeviation) {
             this.maxDeviation = maxDeviation;
-            setModDate();
+            //setModDate();
         }
 
         public void addObservation(Observation observation){
             this.observations.put(observation.getId(),observation);
-            setModDate();
+            //setModDate();
         }
         public void deleteObservation(Integer id){
             observations.remove(id);
-            setModDate();
+            //setModDate();
         }
         public Integer[] getObservationIds(){
             Integer[] ids=new Integer[observations.keySet().size()];
@@ -289,7 +288,7 @@ class ProjectEntry implements Cloneable{
             }
             public void setDate(int date) {
                 this.date = date;
-                setModDate();
+                //setModDate();
                 //TODO: set the dayNumber too.
             }
             public String getRemark() {
@@ -297,7 +296,7 @@ class ProjectEntry implements Cloneable{
             }
             public void setRemark(String remark) {
                 this.remark = remark;
-                setModDate();
+                //setModDate();
             }
             public int getId() {
                 return id;
@@ -307,14 +306,14 @@ class ProjectEntry implements Cloneable{
             }
             public void setMeasurement(double measurement) {
                 this.measurement = measurement;
-                setModDate();
+                //setModDate();
             }
 
             public Observation(int id) {
                 this.id = id;
                 this.date = GregorianCalendar.DATE;
                 this.dayNumber = GregorianCalendar.DAY_OF_YEAR;
-                setModDate();
+                //setModDate();
             }
             public String GenerateBatch(){
                 // Placeholder for batch file generation method.
