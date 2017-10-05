@@ -26,6 +26,7 @@ import java.util.List;
 
 import static android.R.layout.simple_list_item_1;
 import static android.content.Context.LOCATION_SERVICE;
+import static java.lang.Math.sqrt;
 
 /**
  * Created by B028406 on 8/31/2017.
@@ -60,6 +61,12 @@ public class SetupsFragment extends Fragment {
     ArrayAdapter instrumentAdapter;
     ArrayAdapter antennaAdapter;
     ArrayAdapter alarmAdapter;
+
+    // Spinners
+    Spinner fixedPointSpinner;
+    Spinner instrumentSpinner;
+    Spinner antennaSpinner;
+    Spinner alarmSpinner;
 
     //Location
     public static Boolean locationPermitted;
@@ -151,10 +158,10 @@ public class SetupsFragment extends Fragment {
         // TextViews
 
         // Spinners
-        final Spinner fixedPointSpinner = (Spinner) view.findViewById(R.id.fixedPointSpinner);
-        final Spinner instrumentSpinner = (Spinner) view.findViewById(R.id.instrumentSpinner);
-        final Spinner antennaSpinner = (Spinner) view.findViewById(R.id.antennaSpinner);
-        final Spinner alarmSpinner = (Spinner) view.findViewById(R.id.alarmSpinner);
+        fixedPointSpinner = (Spinner) view.findViewById(R.id.fixedPointSpinner);
+        instrumentSpinner = (Spinner) view.findViewById(R.id.instrumentSpinner);
+        antennaSpinner = (Spinner) view.findViewById(R.id.antennaSpinner);
+        alarmSpinner = (Spinner) view.findViewById(R.id.alarmSpinner);
 
         fixedPointAdapter = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_item, ProjectActivity.fixedpointEntries);
@@ -254,8 +261,9 @@ public class SetupsFragment extends Fragment {
         location_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // LOCADE CODE HERE
+                // LOCATE CODE HERE
                 Log.i("SetupsFragment", "Location Button Pressed!");
+                useLocationButton();
             }
         });
         rename_button.setOnClickListener(new View.OnClickListener() {
@@ -284,9 +292,10 @@ public class SetupsFragment extends Fragment {
         clear_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // RENAME CODE HERE
+                // CLEAR CODE HERE
                 Log.i("SetupsFragment", "Clear Button Pressed!");
-                fixedPointSpinner.setId(-1);
+                //TODO: Move this to a confirmation dialog.
+                fixedPointSpinner.setSelection(getIndex(fixedPointSpinner, gpsNames.get(0)));
             }
         });
 
@@ -440,7 +449,25 @@ public class SetupsFragment extends Fragment {
     }
     private void useLocationButton(){
         if(locationFound){
-            //TODO: calculate distances from location to each fixedpoint and choose the nearest.
+            double distance;
+            double tempDistance = 1e9;
+            int tempIndex = 0;
+            for(int i = 0; i<eastings.size(); i++){
+                //This is not very accurate, e.g. it is the numerical distance in degrees
+                //It did correctly identify Matriklen to be KMS3 though.
+                distance = sqrt((eastings.get(i)-longitude)*(eastings.get(i)-longitude)
+                        + (northings.get(i)-latitude)*(northings.get(i)-latitude));
+                if (distance < tempDistance){
+                    tempDistance = distance;
+                    tempIndex = i;
+                }
+            }
+            Log.i("useLocationButton()","Nearest point ID: " + tempIndex
+                    + ", and name: " +  gpsNames.get(tempIndex)
+                    + ", and distance: " + tempDistance);
+
+            fixedPointSpinner.setSelection(getIndex(fixedPointSpinner, gpsNames.get(tempIndex)));
+
             //TODO: Also display distance to said point.
             //TODO: Make spinner select that point
             //TODO: Perhaps do this all in a dialog so the user can choose to abort?
