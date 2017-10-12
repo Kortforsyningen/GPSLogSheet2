@@ -4,11 +4,11 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
+//import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Binder;
+//import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -39,76 +39,22 @@ public class LocationHandler extends Service{
     private boolean locationFound = false;
     private boolean isGPSEnabled = false;
     private boolean isNetworkEnabled = false;
-    private LocationHandler mInstance;
-    private Binder mBinder;
+//    private LocationHandler mInstance;
 
     LocationListener locationListener = new locationListener();
 
     public LocationHandler() {
     }
 
-    public LocationHandler getInstance(){
-        if (mInstance == null){
-            mInstance = new LocationHandler();
-        }
-        return mInstance;
-    }
-
-//    public LocationHandler(Context ctx) {
-//        this.context = ctx;
+//    private String setCriteria() {
+//        Criteria criteria = new Criteria();
+//        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+//        criteria.setAltitudeRequired(false);
+//        criteria.setBearingRequired(false);
+//        criteria.setCostAllowed(true);
+//        criteria.setPowerRequirement(Criteria.POWER_LOW);
+//        return locationManager.getBestProvider(criteria, true);
 //    }
-
-    private String setCriteria() {
-        Criteria criteria = new Criteria();
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        criteria.setAltitudeRequired(false);
-        criteria.setBearingRequired(false);
-        criteria.setCostAllowed(true);
-        criteria.setPowerRequirement(Criteria.POWER_LOW);
-        return locationManager.getBestProvider(criteria, true);
-    }
-//    public boolean isLocationFound(){
-//        return locationFound;
-//    }
-
-    public double getLat() {
-        return lat;
-    }
-
-    public double getLon() {
-        return lon;
-    }
-
-    public void onLocationUpdate() {
-        locationManager = (LocationManager) context.getSystemService(LOCATION_SERVICE);
-
-        // getting GPS status
-        isGPSEnabled = locationManager
-                .isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-        // getting network status
-        isNetworkEnabled = locationManager
-                .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-        //Check Permissions
-        if ( Build.VERSION.SDK_INT >= 23 &&
-                ContextCompat.checkSelfPermission( context, android.Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission( context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return  ;
-        }
-
-        String provider = setCriteria();
-
-        try{
-            Location location = locationManager.getLastKnownLocation(provider);
-            updateLocation(location);
-            LocationListener locListener = new locationListener();
-            locationManager.requestLocationUpdates(provider, 1000, 0,
-                    locListener);
-        } catch(Exception ex){
-            Log.i("LocationHandler","Error creating location service");
-        }
-    }
 
     private void updateLocation(Location location) {
         if (location != null) {
@@ -118,7 +64,7 @@ public class LocationHandler extends Service{
     }
     @Override
     public IBinder onBind(Intent arg0) {
-        return mBinder;
+        return null;
     }
 
     @Override

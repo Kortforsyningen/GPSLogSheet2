@@ -6,14 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -25,8 +20,6 @@ import java.util.Comparator;
 import java.util.Date;
 
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.text.Editable;
@@ -52,15 +45,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.logging.StreamHandler;
-import java.util.zip.Inflater;
 
 import static android.R.layout.simple_list_item_1;
 
@@ -68,15 +55,10 @@ public class ProjectActivity extends AppCompatActivity {
 
     private SharedPreferences prefs;
     public static Integer lastOpenedProject;
-    //public List<ProjectEntry> projectsList;
     public Context mContext;
     public static List<Integer> projectsListIDs;
     public static List<String> projectsListStrings;
-
     private DataBaseHandler db;
-    //private EditText projectNameField;
-    //private EditText operatorNameField;
-
     static public ProjectEntry project;
     static public ProjectEntry project_backup; // so that changes can be discarded.
     static public Boolean save = false; // should the project be saved
@@ -92,9 +74,6 @@ public class ProjectActivity extends AppCompatActivity {
     private static String projectTextTemplate;
 
     public static Boolean locationPermitted;
-    public static LocationManager locationManager;
-
-
     private static InputFilter nameFilter;
     private static InputFilter numberFilter;
 
@@ -163,14 +142,12 @@ public class ProjectActivity extends AppCompatActivity {
 
         } else {
             //generate new id number for project.
-            Integer id = 0;
+            Integer id;
             try {
                 id = Collections.max(projectsListIDs) + 1;
             } catch (NoSuchElementException e) {
                 id = 1;
             }
-
-
             project = new ProjectEntry(id);
             Log.i("ProjectActivity", "New Project, id: " + id.toString());
             try {
@@ -195,23 +172,8 @@ public class ProjectActivity extends AppCompatActivity {
         Date mod_date = new Date(mod_date_long);
         current_projectModDate = mod_date.toString();
 
-        //Setups
-//        HashMap<Integer,ProjectEntry.Setup> setups = project.getSetups();
-//        try {
-//            if (setups.isEmpty()) {
-//                Log.i("Setups", "There are no setups.");
-//            } else {
-//                Log.i("Setups", "There are setups.");
-//            }
-//        }catch(NullPointerException e){
-//            Log.i("Setups", "There are no setups 2.");
-//            project.addSetup(1);
-//
-//        }
-
         setupsListIDs = new ArrayList<>();
         setupsListStrings = new ArrayList<>();
-
         populateSetupsList();
 
         //If there are no setups, add an empty one
@@ -219,13 +181,9 @@ public class ProjectActivity extends AppCompatActivity {
             project.addSetup(0);
             populateSetupsList();
         }
-
-
         setupsAdapter = new ArrayAdapter<>(this, simple_list_item_1, setupsListStrings);
 
-
         //LOCATION
-
         // Check for permission
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -238,26 +196,9 @@ public class ProjectActivity extends AppCompatActivity {
         }
 
         //Start location service "LocationHandler"
-        mContext.startService(new Intent(mContext, LocationHandler.class));
-
-        // Define a listener that responds to location updates
-//        LocationListener locationListener = new LocationListener() {
-//            public void onLocationChanged(Location location) {
-//                // Called when a new location is found by the network location provider.
-//                // TODO: save location into local variable.
-//                //makeUseOfNewLocation(location);
-//            }
-//
-//            public void onStatusChanged(String provider, int status, Bundle extras) {
-//            }
-//
-//            public void onProviderEnabled(String provider) {
-//            }
-//
-//            public void onProviderDisabled(String provider) {
-//            }
-//        };
-//        String locationProvider = LocationManager.GPS_PROVIDER;
+        if (locationPermitted) {
+            mContext.startService(new Intent(mContext, LocationHandler.class));
+        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -317,14 +258,6 @@ public class ProjectActivity extends AppCompatActivity {
                         public void onClick(View v) {
                             // DISCARD CODE HERE
                             save = false;
-                            // read backup project.
-//                            if (!project_backup.getName().isEmpty()){
-//                                project = project_backup;
-//                                save = true;
-//                            }else{
-//                                save = false;
-//                            }
-
                             editor.apply();
 
                             // Close activity
@@ -456,11 +389,10 @@ public class ProjectActivity extends AppCompatActivity {
             setupsListIDs.add(id);
             setupsListStrings.add(entry.getValue().getFixedPoint());
         }
-
-
         try {
             setupsAdapter.notifyDataSetChanged();
         } catch (NullPointerException e) {
+            Log.i("ProjectActivity","PopulateSetupsList, NPE");
 
         }
     }
@@ -554,7 +486,6 @@ public class ProjectActivity extends AppCompatActivity {
             dialog.show();
         }
     }
-
 
     @Override
     protected void onDestroy() {
@@ -663,7 +594,6 @@ public class ProjectActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
 
     // OLDJO: A Project setting fragment
     public static class ProjectSettingsFragment extends Fragment {
