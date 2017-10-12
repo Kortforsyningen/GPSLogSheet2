@@ -237,24 +237,28 @@ public class ProjectActivity extends AppCompatActivity {
             Log.i("ProjectActivity", "Location permitted.");
         }
 
+        //Start location service "LocationHandler"
+        mContext.startService(new Intent(mContext, LocationHandler.class));
+
         // Define a listener that responds to location updates
-        LocationListener locationListener = new LocationListener() {
-            public void onLocationChanged(Location location) {
-                // Called when a new location is found by the network location provider.
-                // TODO: save location into local variable.
-                //makeUseOfNewLocation(location);
-            }
+//        LocationListener locationListener = new LocationListener() {
+//            public void onLocationChanged(Location location) {
+//                // Called when a new location is found by the network location provider.
+//                // TODO: save location into local variable.
+//                //makeUseOfNewLocation(location);
+//            }
+//
+//            public void onStatusChanged(String provider, int status, Bundle extras) {
+//            }
+//
+//            public void onProviderEnabled(String provider) {
+//            }
+//
+//            public void onProviderDisabled(String provider) {
+//            }
+//        };
+//        String locationProvider = LocationManager.GPS_PROVIDER;
 
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-            }
-
-            public void onProviderEnabled(String provider) {
-            }
-
-            public void onProviderDisabled(String provider) {
-            }
-        };
-        String locationProvider = LocationManager.GPS_PROVIDER;
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);

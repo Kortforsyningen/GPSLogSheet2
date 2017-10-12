@@ -51,6 +51,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ref.sdfe.gpslogsheet2.SettingsActivity" />
         </activity>
+        <service android:name=".LocationHandler" android:process=":location_handler" />
     </application>
 
 </manifest>

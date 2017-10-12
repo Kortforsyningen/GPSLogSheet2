@@ -1,10 +1,19 @@
 package ref.sdfe.gpslogsheet2;
 
 import android.Manifest;
+import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.IBinder;
+import android.os.Messenger;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -34,6 +43,7 @@ import static java.lang.Math.sqrt;
  */
 
 public class SetupsFragment extends Fragment {
+
     Integer id;
     ProjectEntry project;
     ProjectEntry.Setup setup;
@@ -70,6 +80,10 @@ public class SetupsFragment extends Fragment {
     Spinner alarmSpinner;
 
     //Location
+    Service mLocationHandler;
+    boolean mBound = false;
+    Messenger mService = null;
+
     public static Boolean locationPermitted;
     LocationManager locationManager;
     Location location;
@@ -80,9 +94,53 @@ public class SetupsFragment extends Fragment {
     public Integer MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 100;
     public Integer MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 200;
 
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // This is called when the connection with the service has been
+            // established, giving us the object we can use to
+            // interact with the service.  We are communicating with the
+            // service using a Messenger, so here we get a client-side
+            // representation of that from the raw IBinder object.
+            mService = new Messenger(service);
+            mBound = true;
+            Log.i("SetupsFragment","LocationService Bound");
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            // This is called when the connection with the service has been
+            // unexpectedly disconnected -- that is, its process crashed.
+            mService = null;
+            mBound = false;
+            Log.i("SetupsFragment","LocationService unbound");
+        }
+    };
+
+    BroadcastReceiver locationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().matches("ref.sdfe.gpslogsheet2.LOCATION_UPDATED")) {
+                //Do your stuff on GPS status change
+                locationFound = true;
+                latitude = intent.getDoubleExtra("lat",0.0f);
+                longitude = intent.getDoubleExtra("lon",0.0f);
+                Log.i("SetupsFragment", "Location received: Latitude: " + latitude + ", Longitude: " + longitude);
+            }
+        }
+    };
+
+
 
     public SetupsFragment() {
 
+
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Bind to LocalService
+        Intent intent = new Intent(getActivity(), LocationHandler.class);
+        getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        getContext().registerReceiver(locationReceiver, new IntentFilter("ref.sdfe.gpslogsheet2.LOCATION_UPDATED"));
 
     }
 
@@ -90,6 +148,25 @@ public class SetupsFragment extends Fragment {
     public void onResume() {
         super.onResume();
         Log.i("SetupsFragment", "onResume()");
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        getActivity().unbindService(mConnection);
+        getContext().unregisterReceiver(locationReceiver);
+        //locationManager = null;
+
+        Log.i("SetupsFragment", "onPause, done");
+    }
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        try{
+            //locationManager = null;
+        }catch(NullPointerException e){
+            Log.i("SetupsFragment", "No LocationManager to set to null");
+        }
+
     }
 
     @Override
@@ -148,13 +225,15 @@ public class SetupsFragment extends Fragment {
 
         if (locationPermitted) {
             Log.i("SetupsFragment", "location permitted");
-            getLocation();
+            //getLocation();
+
         } else {
             Log.i("SetupsFragment", "location denied");
         }
 
-        //Log.i("SetupsFragment","Current Location Lat: " + location.getLatitude() + ", Lon: " + location.getLongitude());
-
+        //Bind location activity TODO: Is this even necessary?
+        getActivity().bindService(new Intent(getActivity(), LocationHandler.class), mConnection , Context.BIND_AUTO_CREATE);
+        Log.i("SetupsFragment","Bindservice");
 
         // TextViews
 
@@ -316,151 +395,6 @@ public class SetupsFragment extends Fragment {
         return index;
     }
 
-    private void getLocation() {
-
-        // TODO: This does NOT work at the moment, it is a mess eiter way.
-
-        int MIN_TIME_BW_UPDATES = 0;
-        int MIN_DISTANCE_CHANGE_FOR_UPDATES = 0;
-
-
-        // PERMISSIONS!
-        if (ContextCompat.checkSelfPermission(getActivity(),
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-            } else {
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-            }
-        }
-        if (ContextCompat.checkSelfPermission(getActivity(),
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION)) {
-            } else {
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
-            }
-        }
-
-
-        Location location = null;
-        Log.i("getLocation()", "Called.");
-
-
-        locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
-
-        // getting GPS status
-        boolean isGPSEnabled = locationManager
-                .isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-        // getting network status
-        boolean isNetworkEnabled = locationManager
-                .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-        if (!isGPSEnabled && !isNetworkEnabled) {
-            // no network provider is enabled
-            Log.i("getLocation()", "no network provider is enabled");
-        } else {
-            if (isNetworkEnabled) {
-                locationManager.requestLocationUpdates(
-                        LocationManager.NETWORK_PROVIDER,
-                        MIN_TIME_BW_UPDATES,
-                        MIN_DISTANCE_CHANGE_FOR_UPDATES, new LocationListener() {
-                            @Override
-                            public void onLocationChanged(Location location) {
-                                Log.i("getLocation()", "onLocationChanged");
-                                location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                                latitude = location.getLatitude();
-                                longitude = location.getLongitude();
-                                if (!locationFound){
-                                    int duration = Toast.LENGTH_SHORT;
-                                    String toast_message = "Location is now available.";
-                                    Toast toast = Toast.makeText(getContext(),toast_message, duration);
-                                    toast.show();
-                                    locationFound = true;
-                                }
-                                Log.i("getLocation()", "Latitude: " + latitude + ", Longitude: " + longitude);
-
-                            }
-
-                            @Override
-                            public void onStatusChanged(String provider, int status, Bundle extras) {
-                                Log.i("getLocation()", "onStatusChanged");
-                            }
-
-                            @Override
-                            public void onProviderEnabled(String provider) {
-                                Log.i("getLocation()", "onProviderEnabled");
-                            }
-
-                            @Override
-                            public void onProviderDisabled(String provider) {
-                                Log.i("getLocation()", "onProviderDisabled");
-                            }
-                        });
-                Log.d("Network", "Network Enabled");
-                if (locationManager != null) {
-                    location = locationManager
-                            .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                    if (location != null) {
-                        latitude = location.getLatitude();
-                        longitude = location.getLongitude();
-                    }
-                }
-            }
-            // if GPS Enabled get lat/long using GPS Services
-            if (isGPSEnabled) {
-                if (location == null) {
-                    locationManager.requestLocationUpdates(
-                            LocationManager.GPS_PROVIDER,
-                            MIN_TIME_BW_UPDATES,
-                            MIN_DISTANCE_CHANGE_FOR_UPDATES, new LocationListener() {
-                                @Override
-                                public void onLocationChanged(Location location) {
-                                    Log.i("getLocation()", "onLocationChanged, GPS");
-                                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                                    latitude = location.getLatitude();
-                                    longitude = location.getLongitude();
-                                    if (!locationFound) {
-                                        int duration = Toast.LENGTH_SHORT;
-                                        String toast_message = "Location is now available.";
-                                        Toast toast = Toast.makeText(getContext(), toast_message, duration);
-                                        toast.show();
-                                        locationFound = true;
-                                    }
-                                    Log.i("getLocation()", "Latitude: " + latitude + ", Longitude: " + longitude);
-                                }
-
-                                @Override
-                                public void onStatusChanged(String provider, int status, Bundle extras) {
-                                    Log.i("getLocation()", "onStatusChanged, GPS");
-                                }
-
-                                @Override
-                                public void onProviderEnabled(String provider) {
-                                    Log.i("getLocation()", "onProviderEnabled, GPS");
-                                }
-
-                                @Override
-                                public void onProviderDisabled(String provider) {
-                                    Log.i("getLocation()", "onProviderDisabled, GPS");
-                                }
-                            });
-                    Log.d("GPS", "GPS Enabled");
-                    if (locationManager != null) {
-                        location = locationManager
-                                .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                        if (location != null) {
-                            latitude = location.getLatitude();
-                            longitude = location.getLongitude();
-                        }
-                    }
-                }
-            }
-        }
-    }
     private void useLocationButton(){
         if(locationFound){
             double distance;
@@ -480,11 +414,10 @@ public class SetupsFragment extends Fragment {
                     + ", and name: " +  gpsNames.get(tempIndex)
                     + ", and distance: " + tempDistance);
 
-            fixedPointSpinner.setSelection(getIndex(fixedPointSpinner, gpsNames.get(tempIndex)));
+            fixedPointSpinner.setSelection(getIndex(fixedPointSpinner, gpsNames.get(tempIndex)),true);
+            //Added boolean 'true' so the new location is saved.
 
-
-            //TODO: Also display distance to said point.
-            //TODO: Make spinner select that point
+            //TODO: Also display distance to said point. (So far only i Log.i)
             //TODO: Perhaps do this all in a dialog so the user can choose to abort?
 
         }else{
