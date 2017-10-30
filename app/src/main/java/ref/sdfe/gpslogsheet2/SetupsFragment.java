@@ -1,17 +1,24 @@
 package ref.sdfe.gpslogsheet2;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
+import android.support.v4.os.EnvironmentCompat;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,13 +26,26 @@ import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import static android.R.id.list;
 import static android.app.Activity.RESULT_OK;
+import static android.os.Environment.DIRECTORY_PICTURES;
+import static android.os.Environment.getExternalStoragePublicDirectory;
 import static java.lang.Math.sqrt;
 
 /**
@@ -39,6 +59,7 @@ public class SetupsFragment extends Fragment {
     ProjectEntry project;
     ProjectEntry.Setup setup;
     static final int REQUEST_IMAGE_CAPTURE = 1;
+    static final int REQUEST_TAKE_PHOTO = 1;
     static final public Integer MY_PERMISSIONS_REQUEST_CAMERA = 200;
 
 
@@ -75,6 +96,13 @@ public class SetupsFragment extends Fragment {
     // TextViews
     String hsNameString;
     TextView hsNameTextView;
+
+    // Photos
+    PhotoList photoAdapter;
+    ListView photoList;
+    ArrayList<Bitmap> photos = new ArrayList<>();
+    ArrayList<String> photoTexts = new ArrayList<>();
+    String mCurrentPhotoPath;
 
     //Location
     public static Boolean locationPermitted;
@@ -339,8 +367,84 @@ public class SetupsFragment extends Fragment {
             }
         });
 
+        // Photos
+        // Placeholder empty arrays
+        //ArrayList<Bitmap> photos = new ArrayList<>();
+        //ArrayList<String> photoTexts = new ArrayList<>();
+
+        // TODO: Populate photos
+
+        photoAdapter = new PhotoList(this.getActivity(),photoTexts,photos);
+        photoList = (ListView) view.findViewById(R.id.photo_list);
+        photoList.setAdapter(photoAdapter);
+        photoList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                //TODO: Open a larger view of photo (perhaps with options to delete photo, edit text etc. etc.)
+                Log.i("SetupsFragment","Photo Clicked");
+                //View photo
+
+                final Dialog photo_dialog = new Dialog(SetupsFragment.this.getContext());
+                LayoutInflater inflater = getActivity().getLayoutInflater();
+                View convertView = inflater.inflate(R.layout.photo_dialog, new LinearLayoutCompat(getContext()), false);
+                photo_dialog.setContentView(convertView);
+                photo_dialog.setCancelable(true);
+                photo_dialog.setTitle("Photo Dialog"); //TODO: change this to something relevant.
+
+                final ImageView photoImageView = (ImageView) photo_dialog.findViewById(R.id.photo_image_view);
+                final TextView photoTextView = (TextView) photo_dialog.findViewById(R.id.photo_text_view);
+
+                //TODO: This is just a thumbnail, get the actual photo.
+                photoImageView.setImageBitmap(photos.get(position));
+                photoTextView.setText(photoTexts.get(position));
+
+                //TODO: Add text changed listener to enable user to edit the text.
+                //photoTextView.
 
 
+                //Button cancel_button = (Button) photo_dialog.findViewById(R.id.cancel_button);
+                final Button photo_delete_button = (Button) photo_dialog.findViewById(R.id.photo_delete_button);
+
+                //Switch that toggles delete button
+                Switch editSwitch = (Switch) photo_dialog.findViewById(R.id.photo_delete_switch);
+                editSwitch.setChecked(false);
+                editSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if (isChecked) {
+                            photo_delete_button.setEnabled(true);
+                            Log.i("ProjectActivity", "Delete switch on :O !");
+                        } else {
+                            photo_delete_button.setEnabled(false);
+                            Log.i("ProjectActivity", "Delete switch off!");
+                        }
+                    }
+                });
+
+//                cancel_button.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        delete_dialog.dismiss();
+//                    }
+//                });
+                photo_delete_button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        // DELETE CODE HERE
+                        //db.delete Photo?
+                        photo_dialog.dismiss();
+                        //final SharedPreferences.Editor editor = prefs.edit();
+                        //editor.putInt("lastOpenedProject", -1);
+                        //editor.commit();
+                        //save = false;
+                        //finish();
+                    }
+                });
+                photo_dialog.show();
+            }
+        });
         return view;
     }
 
@@ -399,9 +503,8 @@ public class SetupsFragment extends Fragment {
         if (ContextCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+            if (!ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
                     Manifest.permission.CAMERA)) {
-            } else {
                 ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, MY_PERMISSIONS_REQUEST_CAMERA);
             }
         } else {
@@ -410,10 +513,26 @@ public class SetupsFragment extends Fragment {
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
                     // Camera code:
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-
-                    //TODO: Capture bitmap and associated thumbnail.
-                    //
+                    // Create the File where the photo should go
+                    File photoFile = null;
+                    try {
+                        photoFile = createImageFile();
+                    } catch (IOException ex) {
+                        // Error occurred while creating the File
+                        Log.e("SetupsFragment","Error occurred while creating the File");
+                    }
+                    // Continue only if the File was successfully created
+                    if (photoFile != null) {
+                        Uri photoURI = FileProvider.getUriForFile(getContext(),
+                                //"com.example.android.fileprovider",
+                                "ref.sdfe.gpslogsheet2.fileprovider",
+                                photoFile);
+                        //takePictureIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        takePictureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                    }
+                    //startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                 }
             }
         }
@@ -421,10 +540,45 @@ public class SetupsFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i("SetupsFragment","Resultcode :" + resultCode);
+        Log.i("SetupsFragment","Supposed to be :" + RESULT_OK);
+
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
+
             //mImageView.setImageBitmap(imageBitmap);
+            photos.add(imageBitmap);
+            photoTexts.add("New Image");
+            Log.i("SetupsFragment","Added photo.");
+            ((ArrayAdapter) photoList.getAdapter()).notifyDataSetChanged();
         }
+    }
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyMMdd_HHmmss").format(new Date());
+        String imageFileName = "gpslogsheet2_" + timeStamp + "_";
+        Log.i("SetupsFragment, file",imageFileName);
+
+        //File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File storageDir = new File(getContext().getExternalFilesDir(DIRECTORY_PICTURES),"");
+        //File storageDir = new File(getContext().getFilesDir(), "images");
+        //File storageDir = new File(getContext().getDir(images,1));
+
+        Log.i("SetupsFragment, dir",storageDir.toString());
+        File image = new File(storageDir,imageFileName);
+
+
+//        File image = File.createTempFile(
+//                imageFileName,  /* prefix */
+//                ".jpg",         /* suffix */
+//                storageDir      /* directory */
+//        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        Log.i("SetupsFragment","HUH!");
+        mCurrentPhotoPath = image.getAbsolutePath();
+        Log.i("SetupsFragment",mCurrentPhotoPath);
+        return image;
     }
 }

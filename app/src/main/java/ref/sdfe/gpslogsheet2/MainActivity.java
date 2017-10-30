@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     public Dialog dialog;
     public Integer MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 100;
     public Integer MY_PERMISSIONS_REQUEST_CAMERA = 200;
+    public Integer MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 300;
     public DataBaseHandler db;
     public ArrayAdapter adapter;
     public ListView listview;
@@ -85,6 +86,16 @@ public class MainActivity extends AppCompatActivity {
 
 
         // PERMISSIONS!
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+            }
+        }
+
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {

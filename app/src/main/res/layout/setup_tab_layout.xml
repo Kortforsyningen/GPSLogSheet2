@@ -112,7 +112,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <Button
@@ -135,6 +135,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Clear" />
+
         <Button
             android:id="@+id/cameraButton"
             android:layout_width="wrap_content"
@@ -142,6 +143,12 @@
             android:layout_weight="1"
             android:text="Capture Photo" />
     </LinearLayout>
+    <!--This list will hold the photos that the user takes-->
+    <ListView
+        android:id="@+id/photo_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+    </ListView>
 
 
 </LinearLayout>

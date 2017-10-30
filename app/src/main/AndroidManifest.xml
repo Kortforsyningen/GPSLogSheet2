@@ -3,7 +3,8 @@
     package="ref.sdfe.gpslogsheet2">
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -52,6 +53,15 @@
                 android:value="ref.sdfe.gpslogsheet2.SettingsActivity" />
         </activity>
         <service android:name=".LocationHandler" android:process=":location_handler" />
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="ref.sdfe.gpslogsheet2.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"></meta-data>
+        </provider>
     </application>
 
 </manifest>
