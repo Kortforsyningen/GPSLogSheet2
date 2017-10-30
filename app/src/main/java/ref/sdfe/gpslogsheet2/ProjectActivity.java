@@ -6,9 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -49,9 +52,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import static android.R.attr.data;
 import static android.R.layout.simple_list_item_1;
 
 public class ProjectActivity extends AppCompatActivity {
+
 
     private SharedPreferences prefs;
     public static Integer lastOpenedProject;
@@ -636,8 +641,7 @@ public class ProjectActivity extends AppCompatActivity {
             fcb.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Snackbar.make(view, "TODO: Camera Activity or something. Also placement.", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
+
                 }
             });
 
@@ -837,7 +841,6 @@ public class ProjectActivity extends AppCompatActivity {
         }
 
     }
-
 
     private void getData() {
 

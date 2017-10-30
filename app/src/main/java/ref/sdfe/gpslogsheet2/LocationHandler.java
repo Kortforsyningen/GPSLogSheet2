@@ -33,7 +33,7 @@ public class LocationHandler extends Service{
     private LocationManager locationManager = null;
 
     //TODO: Set these to something bigger to save battery.
-    int MIN_TIME_BW_UPDATES = 10;
+    int MIN_TIME_BW_UPDATES = 50;
     int MIN_DISTANCE_CHANGE_FOR_UPDATES = 0;
 
     private boolean locationFound = false;

@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     public Context mContext;
     public Dialog dialog;
     public Integer MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 100;
+    public Integer MY_PERMISSIONS_REQUEST_CAMERA = 200;
     public DataBaseHandler db;
     public ArrayAdapter adapter;
     public ListView listview;
@@ -93,6 +94,17 @@ public class MainActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             }
         }
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.CAMERA)) {
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, MY_PERMISSIONS_REQUEST_CAMERA);
+            }
+        }
+
 
 
 

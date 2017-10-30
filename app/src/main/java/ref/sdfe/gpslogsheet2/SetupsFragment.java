@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -17,13 +20,16 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.app.Activity.RESULT_OK;
 import static java.lang.Math.sqrt;
 
 /**
+ * Fragment that holds the current setup. Used by tabhost in ProjectActivity.
  * Created by B028406 on 8/31/2017.
  */
 
@@ -32,6 +38,8 @@ public class SetupsFragment extends Fragment {
     Integer id;
     ProjectEntry project;
     ProjectEntry.Setup setup;
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+    static final public Integer MY_PERMISSIONS_REQUEST_CAMERA = 200;
 
 
     FixedpointEntry currentFixedPoint;
@@ -63,6 +71,10 @@ public class SetupsFragment extends Fragment {
     Spinner instrumentSpinner;
     Spinner antennaSpinner;
     Spinner alarmSpinner;
+
+    // TextViews
+    String hsNameString;
+    TextView hsNameTextView;
 
     //Location
     public static Boolean locationPermitted;
@@ -171,8 +183,9 @@ public class SetupsFragment extends Fragment {
 
         // TextViews
 
-        // Spinners
+        // Spinners and textview
         fixedPointSpinner = (Spinner) view.findViewById(R.id.fixedPointSpinner);
+        hsNameTextView = (TextView) view.findViewById(R.id.hsNameTextView);
         instrumentSpinner = (Spinner) view.findViewById(R.id.instrumentSpinner);
         antennaSpinner = (Spinner) view.findViewById(R.id.antennaSpinner);
         alarmSpinner = (Spinner) view.findViewById(R.id.alarmSpinner);
@@ -191,8 +204,10 @@ public class SetupsFragment extends Fragment {
         antennaSpinner.setAdapter(antennaAdapter);
         alarmSpinner.setAdapter(alarmAdapter);
 
-        // Set the spinners to saved values:
+        // Set the Spinners and TextViews to saved values:
         fixedPointSpinner.setSelection(getIndex(fixedPointSpinner, setup.getFixedPoint()));
+        hsNameString = "hsName: " + setup.getHsName();
+        hsNameTextView.setText(hsNameString);
         instrumentSpinner.setSelection(getIndex(instrumentSpinner, setup.getInstrument()));
         antennaSpinner.setSelection(getIndex(antennaSpinner, setup.getAntenna()));
         alarmSpinner.setSelection(getIndex(alarmSpinner, setup.getAlarm()));
@@ -206,13 +221,14 @@ public class SetupsFragment extends Fragment {
                     setup.setFixedPointId(currentFixedPoint.getID());
                     setup.setFixedPoint(currentFixedPoint.getGPSName());
                     setup.setHsName(currentFixedPoint.getHSName());
+                    hsNameString = "hsName: " + setup.getHsName();
+                    hsNameTextView.setText(hsNameString);
                     project.setModDate();
                     Log.i("SetupsFragment", "Selected FixedPoint: " + currentFixedPoint.getGPSName());
                 } else {
                     Log.i("SetupsFragment", "Selected SAME FixedPoint: " + currentFixedPoint.getGPSName());
                 }
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
@@ -271,6 +287,7 @@ public class SetupsFragment extends Fragment {
         Button rename_button = (Button) view.findViewById(R.id.renameButton);
         Button delete_button = (Button) view.findViewById(R.id.deleteButton);
         Button clear_button = (Button) view.findViewById(R.id.clearButton);
+        Button camera_button = (Button) view.findViewById(R.id.cameraButton);
 
         location_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -285,6 +302,7 @@ public class SetupsFragment extends Fragment {
             public void onClick(View v) {
                 // RENAME CODE HERE
                 Log.i("SetupsFragment", "Rename Button Pressed!");
+                // TODO: Implement a way to rename setups
             }
         });
         delete_button.setOnClickListener(new View.OnClickListener() {
@@ -294,7 +312,7 @@ public class SetupsFragment extends Fragment {
                 Log.i("SetupsFragment", "Delete Button Pressed!");
 
                 project.removeSetup(id);
-                //Find a way to remove it correctly.
+                //TODO: Find a way to remove it correctly.
 
                 getFragmentManager().beginTransaction().remove(SetupsFragment.this).commitAllowingStateLoss();
                 //This only removes the content of the tab, not the
@@ -312,6 +330,16 @@ public class SetupsFragment extends Fragment {
                 fixedPointSpinner.setSelection(getIndex(fixedPointSpinner, gpsNames.get(0)));
             }
         });
+        camera_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //
+                useCameraButton();
+                Log.i("SetupsFragment", "Camera button Pressed!");
+            }
+        });
+
+
 
         return view;
     }
@@ -325,6 +353,9 @@ public class SetupsFragment extends Fragment {
             if (spinner.getItemAtPosition(i).toString().equals(myString)) {
                 index = i;
             }
+        }
+        if (index == 0) {
+            Log.i("SetupsFragment","No matching item found in list");
         }
         return index;
     }
@@ -351,7 +382,7 @@ public class SetupsFragment extends Fragment {
             fixedPointSpinner.setSelection(getIndex(fixedPointSpinner, gpsNames.get(tempIndex)),true);
             //Added boolean 'true' so the new location is saved.
 
-            //TODO: Also display distance to said point. (So far only i Log.i)
+            //TODO: Also display distance to said point. (So far only Log.i)
             //TODO: Perhaps do this all in a dialog so the user can choose to abort?
 
         }else{
@@ -360,6 +391,40 @@ public class SetupsFragment extends Fragment {
             String toast_message = "Location not yet available.";
             Toast toast = Toast.makeText(getContext(),toast_message, duration);
             toast.show();
+        }
+    }
+
+    private void useCameraButton(){
+        // Check permissions
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                    Manifest.permission.CAMERA)) {
+            } else {
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, MY_PERMISSIONS_REQUEST_CAMERA);
+            }
+        } else {
+            // Check system feature
+            if (getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    // Camera code:
+                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+
+                    //TODO: Capture bitmap and associated thumbnail.
+                    //
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            //mImageView.setImageBitmap(imageBitmap);
         }
     }
 }
