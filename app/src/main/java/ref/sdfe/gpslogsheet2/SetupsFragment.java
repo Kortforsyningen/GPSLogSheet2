@@ -8,7 +8,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -41,6 +43,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static android.R.id.list;
 import static android.app.Activity.RESULT_OK;
@@ -59,7 +62,7 @@ public class SetupsFragment extends Fragment {
     ProjectEntry project;
     ProjectEntry.Setup setup;
     static final int REQUEST_IMAGE_CAPTURE = 1;
-    static final int REQUEST_TAKE_PHOTO = 1;
+    private static final String CAPTURE_IMAGE_FILE_PROVIDER = "ref.sdfe.gpslogsheet2.provider";
     static final public Integer MY_PERMISSIONS_REQUEST_CAMERA = 200;
 
 
@@ -140,7 +143,12 @@ public class SetupsFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        getContext().unregisterReceiver(locationReceiver);
+        try{
+            getContext().unregisterReceiver(locationReceiver);
+        }catch(IllegalArgumentException e){
+            Log.e("SetupsFragment","unregisterReceiver",e);
+        }
+
     }
     @Override
     public void onDestroy(){
@@ -396,7 +404,6 @@ public class SetupsFragment extends Fragment {
                 final ImageView photoImageView = (ImageView) photo_dialog.findViewById(R.id.photo_image_view);
                 final TextView photoTextView = (TextView) photo_dialog.findViewById(R.id.photo_text_view);
 
-                //TODO: This is just a thumbnail, get the actual photo.
                 photoImageView.setImageBitmap(photos.get(position));
                 photoTextView.setText(photoTexts.get(position));
 
@@ -414,10 +421,10 @@ public class SetupsFragment extends Fragment {
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         if (isChecked) {
                             photo_delete_button.setEnabled(true);
-                            Log.i("ProjectActivity", "Delete switch on :O !");
+                            Log.i("photo_dialog", "Delete switch on :O !");
                         } else {
                             photo_delete_button.setEnabled(false);
-                            Log.i("ProjectActivity", "Delete switch off!");
+                            Log.i("photo_dialog", "Delete switch off!");
                         }
                     }
                 });
@@ -510,7 +517,9 @@ public class SetupsFragment extends Fragment {
         } else {
             // Check system feature
             if (getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
                 if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
                     // Camera code:
                     // Create the File where the photo should go
@@ -519,20 +528,24 @@ public class SetupsFragment extends Fragment {
                         photoFile = createImageFile();
                     } catch (IOException ex) {
                         // Error occurred while creating the File
-                        Log.e("SetupsFragment","Error occurred while creating the File");
+                        Log.e("SetupsFragment","Error occurred while creating the File",ex);
                     }
+
                     // Continue only if the File was successfully created
                     if (photoFile != null) {
-                        Uri photoURI = FileProvider.getUriForFile(getContext(),
-                                //"com.example.android.fileprovider",
-                                "ref.sdfe.gpslogsheet2.fileprovider",
+                        Uri photoURI = FileProvider.getUriForFile(getActivity().getApplicationContext(),
+                                getActivity().getApplicationContext().getPackageName() + ".provider",
                                 photoFile);
-                        //takePictureIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        takePictureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+                        Log.i("SetupsFragment",photoURI.toString());
+
                         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                        //takePictureIntent.setClipData();
+                        takePictureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
                         startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                     }
-                    //startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                 }
             }
         }
@@ -543,42 +556,67 @@ public class SetupsFragment extends Fragment {
         Log.i("SetupsFragment","Resultcode :" + resultCode);
         Log.i("SetupsFragment","Supposed to be :" + RESULT_OK);
 
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
+        if ((requestCode == REQUEST_IMAGE_CAPTURE) && (resultCode == RESULT_OK)) {
+            // Following only works for tiny images without URI
+            //Bundle extras = data.getExtras();
+            //Bitmap imageBitmap = (Bitmap) extras.get("data");
 
-            //mImageView.setImageBitmap(imageBitmap);
+            //File imagefile = new File(mCurrentPhotoPath);
+            BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+            bitmapOptions.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(mCurrentPhotoPath, bitmapOptions);
+
+            //TODO: Decide on a target resolution.
+            //int width = bitmapOptions.outWidth;
+            //int height = bitmapOptions.outHeight;
+
+            int scaleFactor = 1; //Keep full resolution
+
+            bitmapOptions.inJustDecodeBounds = false;
+            bitmapOptions.inSampleSize = scaleFactor;
+
+            Bitmap imageBitmap = BitmapFactory.decodeFile(mCurrentPhotoPath,bitmapOptions);
+
             photos.add(imageBitmap);
             photoTexts.add("New Image");
             Log.i("SetupsFragment","Added photo.");
             ((ArrayAdapter) photoList.getAdapter()).notifyDataSetChanged();
+
+            //TODO: Save picture
         }
     }
     private File createImageFile() throws IOException {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String imageFileName = "gpslogsheet2_" + timeStamp + "_";
-        Log.i("SetupsFragment, file",imageFileName);
+        Log.i("SetupsFragment, file",imageFileName + ".jpg");
 
-        //File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        File storageDir = new File(getContext().getExternalFilesDir(DIRECTORY_PICTURES),"");
-        //File storageDir = new File(getContext().getFilesDir(), "images");
-        //File storageDir = new File(getContext().getDir(images,1));
+        // Get the image folder path
+        File storageDir = new File(getContext().getFilesDir().getAbsolutePath() + "/images");
 
-        Log.i("SetupsFragment, dir",storageDir.toString());
-        File image = new File(storageDir,imageFileName);
+        // Check if that directory exists, if not create it.
+        if(storageDir.exists() && storageDir.isDirectory()) {
+            Log.i("SetupsFragment","Pictures directory exists!");
+        }else{
+            if (storageDir.mkdir()){
+                Log.i("SetupsFragment","Pictures directory created!");
+            }else Log.e("SetupsFragment","Pictures directory creation FAILED!");
+        }
 
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
 
-//        File image = File.createTempFile(
-//                imageFileName,  /* prefix */
-//                ".jpg",         /* suffix */
-//                storageDir      /* directory */
-//        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        Log.i("SetupsFragment","HUH!");
+        // Save a file path for use with ACTION_IMAGE_CAPTURE intent
         mCurrentPhotoPath = image.getAbsolutePath();
         Log.i("SetupsFragment",mCurrentPhotoPath);
+        if(image.exists()){
+            Log.i("SetupsFragment","file exists");
+        }else{
+            Log.i("SetupsFragment","file does not exist");
+        }
         return image;
     }
 }

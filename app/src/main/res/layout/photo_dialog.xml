@@ -9,17 +9,48 @@
     <ImageView
         android:id="@+id/photo_image_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"/>
     <TextView
         android:id="@+id/photo_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
-    <Switch
-        android:id="@+id/photo_delete_switch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-    <Button
-        android:id="@+id/photo_delete_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+
+    <!--Dummy item to prevent focus being stolen by TextView-->
+    <LinearLayout
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:layout_width="0px"
+        android:layout_height="0px"/>
+
+    <AutoCompleteTextView
+        android:id="@+id/photo_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/photo_rename_button"
+            android:text="Rename"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+        <Switch
+            android:id="@+id/photo_delete_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+        <Button
+            android:id="@+id/photo_delete_button"
+            android:enabled="false"
+            android:text="Delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
+
 </LinearLayout>
