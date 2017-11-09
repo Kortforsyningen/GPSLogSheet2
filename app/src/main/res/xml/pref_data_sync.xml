@@ -18,23 +18,23 @@
             android:title="@string/settings_images"
             android:key="switch_preference_images" />
         <SwitchPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:title="@string/settings_points"
             android:key="switch_preference_points" />
         <SwitchPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:title="@string/settings_instruments"
             android:key="switch_preference_instruments" />
         <SwitchPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:title="@string/settings_rods"
             android:key="switch_preference_rods" />
         <SwitchPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:title="@string/settings_antennas"
             android:key="switch_preference_antennas" />
         <SwitchPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:title="@string/settings_alarms"
             android:key="switch_preference_alarms" />
     </PreferenceCategory>

@@ -22,6 +22,7 @@ class ProjectEntry implements Cloneable{
     private long startDate;
     private long endDate;
     private long modDate;
+    private HashMap<Integer,Setup> setups; //HasMap to store setups
 
     public HashMap<Integer, Setup> getSetups() {
         return setups;
@@ -38,8 +39,11 @@ class ProjectEntry implements Cloneable{
         Log.i("ProjectEntry","getSetupIDs called");
         List<Integer> IDs = null;
         try{
+            //setups.forEach((i,setup) -> IDs.add(setup.getId());
+
             for(Map.Entry<Integer,Setup> entry : setups.entrySet()){
-                IDs.add(entry.getKey());
+                Integer key = entry.getKey();
+                IDs.add(key);
                 Log.i("ProjectEntry","setupID added");
             }
             return IDs;
@@ -47,7 +51,6 @@ class ProjectEntry implements Cloneable{
             return IDs;
         }
     }
-    private HashMap<Integer,Setup> setups; //HasMap to store setups
     public ProjectEntry(int id) {
         /*
         * This constructor automatically gets current date
@@ -111,7 +114,7 @@ class ProjectEntry implements Cloneable{
         return super.clone();
     }
 
-    class Setup{
+    class Setup implements Cloneable{
 
         private HashMap<Integer,Observation> observations; //HashMap to store observations
         private int id;
@@ -124,11 +127,18 @@ class ProjectEntry implements Cloneable{
         private String alarm;
         private int antennaId;
         private String antenna;
-        private String images;
+        private String images;  //semicolon delimited string of paths
+        private String imageTitles; //semicolon delimited string of titles
+        private String imageDescriptions; //semicolon delimited string of descriptions/notes
         private Boolean verticalToARP; //
         private Boolean usingRod;
         private double antennaHeight;
         private double maxDeviation;
+
+        // clone for backup support (not sure if needed)
+        protected Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
 
         public Setup(int id) {
             observations = new HashMap<Integer, Observation>();
@@ -222,8 +232,20 @@ class ProjectEntry implements Cloneable{
 
         public void setImages(String images) {
             this.images = images;
-            //setModDate();
         }
+        public void setImageTitles(String imageTitles) {
+            this.imageTitles = imageTitles;
+        }
+        public String getImageTitles(){
+            return imageTitles;
+        }
+        public void setImageDescriptions(String imageDescriptions) {
+            this.imageDescriptions = imageDescriptions;
+        }
+        public String getImageDescriptions(){
+            return imageDescriptions;
+        }
+
 
         public Boolean getVerticalToARP() {
             return verticalToARP;

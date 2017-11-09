@@ -45,7 +45,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import static android.R.id.content;
 import static android.R.id.list;
+import static android.R.id.title;
 import static android.app.Activity.RESULT_OK;
 import static android.os.Environment.DIRECTORY_PICTURES;
 import static android.os.Environment.getExternalStoragePublicDirectory;
@@ -61,6 +63,7 @@ public class SetupsFragment extends Fragment {
     Integer id;
     ProjectEntry project;
     ProjectEntry.Setup setup;
+    ProjectEntry.Setup setup_backup;
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final String CAPTURE_IMAGE_FILE_PROVIDER = "ref.sdfe.gpslogsheet2.provider";
     static final public Integer MY_PERMISSIONS_REQUEST_CAMERA = 200;
@@ -104,7 +107,10 @@ public class SetupsFragment extends Fragment {
     PhotoList photoAdapter;
     ListView photoList;
     ArrayList<Bitmap> photos = new ArrayList<>();
-    ArrayList<String> photoTexts = new ArrayList<>();
+
+    ArrayList<String> photoTitles = new ArrayList<>();
+    ArrayList<String> photoDescriptions = new ArrayList<>();
+    ArrayList<String> photoPaths = new ArrayList<>();
     String mCurrentPhotoPath;
 
     //Location
@@ -138,6 +144,7 @@ public class SetupsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        getContext().registerReceiver(locationReceiver, new IntentFilter("ref.sdfe.gpslogsheet2.LOCATION_UPDATED"));
         Log.i("SetupsFragment", "onResume()");
     }
     @Override
@@ -163,6 +170,16 @@ public class SetupsFragment extends Fragment {
         id = getArguments().getInt("Id");
         project = ProjectActivity.project;
         setup = project.getSetups().get(id);
+
+
+        //Clone setup as backup
+        try {
+            setup_backup = (ProjectEntry.Setup) setup.clone();
+        } catch (CloneNotSupportedException e) {
+            Log.i("SetupsFragment", "Cloning not supported :/");
+        }
+
+
         Log.i("SetupsFragment", "Getting setup: " + setup.getId()
                 + ", from project: " + project.getId() + ", called: " + project.getName());
 
@@ -347,13 +364,62 @@ public class SetupsFragment extends Fragment {
                 // REMOVE TAB CODE HERE
                 Log.i("SetupsFragment", "Delete Button Pressed!");
 
-                project.removeSetup(id);
-                //TODO: Find a way to remove it correctly.
+                // TODO: Implement deletion, getSetupIDs does not work at the moment.
+                //
+                //List<Integer> IDs = project.getSetupIDs();
 
-                getFragmentManager().beginTransaction().remove(SetupsFragment.this).commitAllowingStateLoss();
-                //This only removes the content of the tab, not the
-                Log.i("SetupsFragment", "huh");
-
+//                if ( IDs.isEmpty() || IDs.size() < 2){
+//                    Log.i("SetupsFragment", "Too few setups.");
+//                }else{
+//                    final Dialog delete_dialog = new Dialog(SetupsFragment.this.getContext());
+//                    LayoutInflater inflater = getActivity().getLayoutInflater();
+//                    View convertView = inflater.inflate(R.layout.delete_dialog, new LinearLayoutCompat(getContext()), false);
+//                    delete_dialog.setContentView(convertView);
+//                    delete_dialog.setCancelable(true);
+//                    delete_dialog.setTitle("WARNING!");
+//
+//                    Button cancel_button = (Button) delete_dialog.findViewById(R.id.cancel_button);
+//                    final Button delete_button = (Button) delete_dialog.findViewById(R.id.delete_button);
+//
+//                    //Switch that toggles delete button
+//                    Switch editSwitch = (Switch) delete_dialog.findViewById(R.id.delete_switch);
+//                    editSwitch.setChecked(false);
+//                    editSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                            if (isChecked) {
+//                                delete_button.setEnabled(true);
+//                                Log.i("SetupsFragment", "Delete switch on :O !");
+//                            } else {
+//                                delete_button.setEnabled(false);
+//                                Log.i("SetupsFragment", "Delete switch off!");
+//                            }
+//                        }
+//                    });
+//                    cancel_button.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//                            delete_dialog.dismiss();
+//                        }
+//                    });
+//                    delete_button.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//
+//                            // DELETE CODE HERE
+//                            Log.i("SetupsFragment", "Deletion");
+//                            //db.deleteProject(project);
+//                            delete_dialog.dismiss();
+//
+//                            project.removeSetup(id);
+//                            //TODO: Find a way to remove it correctly.
+//
+//                            getFragmentManager().beginTransaction().remove(SetupsFragment.this).commitAllowingStateLoss();
+//                            //This only removes the content of the tab, not the
+//                            Log.i("SetupsFragment", "Setup deleted");
+//                        }
+//                    });
+//                    delete_dialog.show();
+//                }
 
             }
         });
@@ -375,14 +441,7 @@ public class SetupsFragment extends Fragment {
             }
         });
 
-        // Photos
-        // Placeholder empty arrays
-        //ArrayList<Bitmap> photos = new ArrayList<>();
-        //ArrayList<String> photoTexts = new ArrayList<>();
-
-        // TODO: Populate photos
-
-        photoAdapter = new PhotoList(this.getActivity(),photoTexts,photos);
+        photoAdapter = new PhotoList(this.getActivity(),photoTitles,photos);
         photoList = (ListView) view.findViewById(R.id.photo_list);
         photoList.setAdapter(photoAdapter);
         photoList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -392,6 +451,7 @@ public class SetupsFragment extends Fragment {
                                     int position, long id) {
                 //TODO: Open a larger view of photo (perhaps with options to delete photo, edit text etc. etc.)
                 Log.i("SetupsFragment","Photo Clicked");
+
                 //View photo
 
                 final Dialog photo_dialog = new Dialog(SetupsFragment.this.getContext());
@@ -405,7 +465,8 @@ public class SetupsFragment extends Fragment {
                 final TextView photoTextView = (TextView) photo_dialog.findViewById(R.id.photo_text_view);
 
                 photoImageView.setImageBitmap(photos.get(position));
-                photoTextView.setText(photoTexts.get(position));
+                photoTextView.setText(photoDescriptions.get(position));
+                photo_dialog.setTitle(photoTitles.get(position));
 
                 //TODO: Add text changed listener to enable user to edit the text.
                 //photoTextView.
@@ -452,6 +513,10 @@ public class SetupsFragment extends Fragment {
                 photo_dialog.show();
             }
         });
+        // TODO: Populate photos
+        if (photoAdapter.isEmpty()) {
+            populatePhotos();
+        }
         return view;
     }
 
@@ -551,6 +616,49 @@ public class SetupsFragment extends Fragment {
         }
     }
 
+    private void populatePhotos(){
+        String imageString = setup.getImages();
+        String titleString = setup.getImageTitles();
+        String descriptionString = setup.getImageDescriptions();
+        if(imageString != null){
+            Log.i("SetupsFragment","Populating images.");
+            String[] imageList = imageString.split(";");
+            String[] titleList = titleString.split(";");
+            String[] descriptionList = descriptionString.split(";");
+            for (String image : imageList){
+
+                BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+                bitmapOptions.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(mCurrentPhotoPath, bitmapOptions);
+
+                //TODO: Decide on a target resolution.
+                //int width = bitmapOptions.outWidth;
+                //int height = bitmapOptions.outHeight;
+
+                int scaleFactor = 1; //Keep full resolution
+
+                bitmapOptions.inJustDecodeBounds = false;
+                bitmapOptions.inSampleSize = scaleFactor;
+
+                Bitmap imageBitmap = BitmapFactory.decodeFile(image,bitmapOptions);
+
+                photos.add(imageBitmap);
+                //TODO: phot text
+                photoPaths.add(image);
+                Log.i("SetupsFragment","Populated photo.");
+            }
+            for (String title : titleList){
+                photoTitles.add(title);
+            }
+            for (String description : descriptionList){
+                photoDescriptions.add(description);
+            }
+            ((ArrayAdapter) photoList.getAdapter()).notifyDataSetChanged();
+        }else{
+            Log.i("SetupsFragment","No images in setup.");
+        }
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i("SetupsFragment","Resultcode :" + resultCode);
@@ -578,11 +686,28 @@ public class SetupsFragment extends Fragment {
             Bitmap imageBitmap = BitmapFactory.decodeFile(mCurrentPhotoPath,bitmapOptions);
 
             photos.add(imageBitmap);
-            photoTexts.add("New Image");
+            photoTitles.add("New photo.");
+            photoDescriptions.add("Description here.");
+            photoPaths.add(mCurrentPhotoPath);
             Log.i("SetupsFragment","Added photo.");
             ((ArrayAdapter) photoList.getAdapter()).notifyDataSetChanged();
 
             //TODO: Save picture
+            if(setup.getImages() == null){
+                //If no images in setup
+                setup.setImages(mCurrentPhotoPath);
+                setup.setImageDescriptions("Description here.");
+                setup.setImageTitles("New Photo.");
+            }else{
+                //If there are already images
+                setup.setImages(setup.getImages()+ ";" + mCurrentPhotoPath);
+                setup.setImageDescriptions(setup.getImageDescriptions()+ ";" + "Description here.");
+                setup.setImageTitles(setup.getImageTitles()+ ";" + "New photo.");
+                //TODO: Perhaps some other data structure than strings. Maybe setup class should do all this.
+            }
+            // Set the project date
+            project.setModDate();
+            Log.i("SetupsFragment",setup.getImages());
         }
     }
     private File createImageFile() throws IOException {

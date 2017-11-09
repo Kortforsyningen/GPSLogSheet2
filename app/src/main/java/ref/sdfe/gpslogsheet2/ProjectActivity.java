@@ -6,12 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -827,7 +824,12 @@ public class ProjectActivity extends AppCompatActivity {
             //Get the setups from the project.
             HashMap<Integer, ProjectEntry.Setup> setups = project.getSetups();
             // Find maximum ID and add one
-            Integer id = Collections.max(setups.keySet()) + 1;
+            Integer id;
+            if (setups.isEmpty()){
+                id = 0;
+            }else{
+                id = Collections.max(setups.keySet()) + 1;
+            }
             project.addSetup(id);
             Bundle bundle = new Bundle();
             bundle.putInt("Id", id);
