@@ -282,7 +282,13 @@ class ProjectEntry implements Cloneable{
             this.maxDeviation = maxDeviation;
             //setModDate();
         }
-
+        public void addObservation(Integer id, double measurement){
+            Observation obs = new Observation(id, measurement);
+                    this.observations.put(id,obs);
+        }
+        public HashMap<Integer, Observation> getObservations(){
+            return observations;
+        }
         public void addObservation(Observation observation){
             this.observations.put(observation.getId(),observation);
             //setModDate();
@@ -291,10 +297,21 @@ class ProjectEntry implements Cloneable{
             observations.remove(id);
             //setModDate();
         }
-        public Integer[] getObservationIds(){
-            Integer[] ids=new Integer[observations.keySet().size()];
-            observations.keySet();
-            return ids;
+        public List<Integer> getObservationIDs(){
+
+            Log.i("ProjectEntry","getObservationIDs called");
+            List<Integer> IDs = null;
+            try{
+                for(Map.Entry<Integer,Observation> entry : observations.entrySet()){
+                    Integer key = entry.getKey();
+                    IDs.add(key);
+                    Log.i("ProjectEntry","ObservationID added");
+                }
+                return IDs;
+            }catch (NullPointerException E){
+                return IDs;
+            }
+
         }
 
         class Observation{
@@ -334,8 +351,9 @@ class ProjectEntry implements Cloneable{
                 //setModDate();
             }
 
-            public Observation(int id) {
+            public Observation(int id, double measurement) {
                 this.id = id;
+                this.measurement = measurement;
                 this.date = GregorianCalendar.DATE;
                 this.dayNumber = GregorianCalendar.DAY_OF_YEAR;
                 //setModDate();

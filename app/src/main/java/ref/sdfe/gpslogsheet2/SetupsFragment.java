@@ -6,20 +6,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
-import android.support.v4.os.EnvironmentCompat;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,19 +34,13 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import static android.R.id.content;
-import static android.R.id.list;
-import static android.R.id.title;
 import static android.app.Activity.RESULT_OK;
-import static android.os.Environment.DIRECTORY_PICTURES;
-import static android.os.Environment.getExternalStoragePublicDirectory;
 import static java.lang.Math.sqrt;
 
 /**
@@ -60,12 +50,12 @@ import static java.lang.Math.sqrt;
 
 public class SetupsFragment extends Fragment {
 
-    Integer id;
+    static Integer id;
     ProjectEntry project;
     ProjectEntry.Setup setup;
     ProjectEntry.Setup setup_backup;
     static final int REQUEST_IMAGE_CAPTURE = 1;
-    private static final String CAPTURE_IMAGE_FILE_PROVIDER = "ref.sdfe.gpslogsheet2.provider";
+    //private static final String CAPTURE_IMAGE_FILE_PROVIDER = "ref.sdfe.gpslogsheet2.provider";
     static final public Integer MY_PERMISSIONS_REQUEST_CAMERA = 200;
 
 
@@ -145,6 +135,7 @@ public class SetupsFragment extends Fragment {
     public void onResume() {
         super.onResume();
         getContext().registerReceiver(locationReceiver, new IntentFilter("ref.sdfe.gpslogsheet2.LOCATION_UPDATED"));
+
         Log.i("SetupsFragment", "onResume()");
     }
     @Override

@@ -9,36 +9,22 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="ref.sdfe.gpslogsheet2.ProjectActivity$ObservationsFragment">
 
-    <TabHost
-        android:id="@+id/observation_tab_host"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        >
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/add_observation_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add measurement"/>
 
-            <TabWidget
-                android:id="@android:id/tabs"
-                android:orientation="horizontal"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="0"
-                />
+    </LinearLayout>
 
-            <FrameLayout
-                android:id="@android:id/tabcontent"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="0"/>
+    <!--This list will hold the observation that the user makes-->
+    <ListView
+        android:id="@+id/observations_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+    </ListView>
 
-            <FrameLayout
-                android:id="@+id/realtabcontent"
-                android:layout_width="fill_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"/>
-        </LinearLayout>
-    </TabHost>
 </android.support.constraint.ConstraintLayout>

@@ -47,7 +47,6 @@ public class PhotoList extends ArrayAdapter {
         ImageView imageView = (ImageView) rowView.findViewById(R.id.photo);
 
         txtTitle.setText(text.get(position));
-        //imageView.setImageResource(photoId[position]);
         imageView.setImageBitmap(photo.get(position));
 
         return rowView;
