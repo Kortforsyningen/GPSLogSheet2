@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * Class that that makes a photo and text adapter for the SetupsFragment
  * Created by B028406 on 10/30/2017.
  */
 
@@ -34,7 +33,7 @@ public class ObservationList extends ArrayAdapter {
             Log.i("ObservationList", "getCount: " + String.valueOf(id.size()) + " returned");
             return id.size();
         }catch(NullPointerException e){
-            Log.i("ObservationList","getCount: 0 returned");
+            Log.i("ObservationList","getCount: 0 returned, NullPointerException");
             return 0;
         }
     }
@@ -49,9 +48,7 @@ public class ObservationList extends ArrayAdapter {
         if (rowView == null) rowView = inflater.inflate(R.layout.list_observation, null, true);
 
         TextView textId = (TextView) rowView.findViewById(R.id.id_observation);
-
         TextView measurementText = (TextView) rowView.findViewById(R.id.text_measurement);
-
         TextView noteText = (TextView) rowView.findViewById(R.id.text_note);
 
         textId.setText(id.get(position));

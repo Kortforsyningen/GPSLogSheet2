@@ -1,6 +1,6 @@
 package ref.sdfe.gpslogsheet2;
 
-import android.app.Activity;
+//import android.app.Activity;
 import android.app.Dialog;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -41,7 +41,7 @@ public class ObservationsFragment extends Fragment {
     //List<Double> measurements = new ArrayList<>();
 
     // Adapters
-    ArrayAdapter observationsAdapter;
+    static ArrayAdapter observationsAdapter;
 
     public ObservationsFragment() {
     }
@@ -61,7 +61,7 @@ public class ObservationsFragment extends Fragment {
     public void onPause() {
         super.onPause();
         setup = ProjectActivity.project.getSetups().get(SetupsFragment.id);
-        Log.i("ObservationsFragment","Setup selected: " + setup.getId());
+        Log.i("ObservationsFragment","onPause, Setup selected: " + setup.getId());
     }
 
     @Override
@@ -70,7 +70,7 @@ public class ObservationsFragment extends Fragment {
 
         // Get setup in which to add measurements
         setup = ProjectActivity.project.getSetups().get(SetupsFragment.id);
-        Log.i("ObservationsFragment","Setup selected: " + setup.getId());
+        Log.i("ObservationsFragment","onResume, Setup selected: " + setup.getId());
 
 
         try {if (!observationIDs.isEmpty()){
@@ -93,10 +93,16 @@ public class ObservationsFragment extends Fragment {
 
         // Get setup in which to add measurements
         setup = ProjectActivity.project.getSetups().get(SetupsFragment.id);
-        Log.i("ObservationsFragment","Setup selected: " + setup.getId());
+        Log.i("ObservationsFragment","OnCreateView, Setup selected: " + setup.getId());
 
         //TODO: observations adapter
-        setup.addObservation(0,1.5);
+        Log.i("getObservationCount", setup.getObservationCount().toString());
+        if(setup.getObservationCount() < 1){
+            // add dummy observation
+            setup.addObservation(0,0);
+
+        }
+
         observationIDs = setup.getObservationIDs();
         observations = setup.getObservations();
 
@@ -125,11 +131,8 @@ public class ObservationsFragment extends Fragment {
         }
 
         observationsAdapter = new ObservationList(this.getActivity(),observationIDs,observations);
-
         observationsList = (ListView) view.findViewById(R.id.observations_list);
         observationsList.setAdapter(observationsAdapter);
-
-
 
         // Add observation dialog:
         final Dialog addObservationDialog = new Dialog(this.getContext());
@@ -159,16 +162,21 @@ public class ObservationsFragment extends Fragment {
 
                     //Get the setups from the project.
                     List<Integer> ids = setup.getObservationIDs();
-                    //Log.i("ObservationFragment",String.valueOf(ids.));
+//                    for(Integer id : ids){
+//                        Log.i("ObsFragment, IDS",id.toString());
+//                    }
+                    Log.i("ObservationFragment",String.valueOf(ids));
                     // Find maximum ID and add one
                     int id;
                     try{id = Collections.max(ids) + 1;}catch(NullPointerException e){
-                        id = 0;
+                        id = 1;
                     }
 
                     setup.addObservation(id,Double.parseDouble(measurementField.getText().toString()));
                     Log.i("ObservationsFragment","Observation added!");
                     observations = setup.getObservations();
+                    observationIDs = setup.getObservationIDs();
+
                     observationsAdapter.notifyDataSetChanged();
                     ((ArrayAdapter) observationsList.getAdapter()).notifyDataSetChanged();
 
@@ -198,6 +206,42 @@ public class ObservationsFragment extends Fragment {
             }
         });
 
+        if (observationsAdapter.isEmpty()) {
+            populateObservations();
+        }
+
         return view;
+    }
+
+    public static void fragmentChanged(){
+        /**
+         * This gets called when user selects different setup in ProjectSettingsFragment
+         * Makes sure that ObservationsFragment is working on correct setup.
+         */
+        try {
+            observationsAdapter.notifyDataSetChanged();
+        }catch(NullPointerException e){
+            Log.i("ObservationsFragment", "fragmentChanged(), NPE");
+    }
+
+        Log.i("ObservationsFragment", "fragmentChanged()");
+//        Toast.makeText(actvity, "Fragment Changed", Toast.LENGTH_SHORT).show();
+    }
+
+    private void populateObservations(){
+
+        Log.i("ObservationFragment", "Attempting to populate observations.");
+        observations = setup.getObservations();
+        observationIDs = setup.getObservationIDs();
+        try {
+            // If there are any observations
+            if (!observationIDs.isEmpty()) {
+                Log.i("ObservationFragment", "Populating observations.");
+                for (Integer obs : observationIDs) {
+                    }
+                }
+            }catch(NullPointerException e){
+            Log.i("ObservationFragment", "Nullpointer Exception");
+        }
     }
 }

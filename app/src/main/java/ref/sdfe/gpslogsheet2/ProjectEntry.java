@@ -285,6 +285,7 @@ class ProjectEntry implements Cloneable{
         public void addObservation(Integer id, double measurement){
             Observation obs = new Observation(id, measurement);
                     this.observations.put(id,obs);
+            Log.i("ProjectEntry","Observation " + id.toString() + " added");
         }
         public HashMap<Integer, Observation> getObservations(){
             return observations;
@@ -297,10 +298,18 @@ class ProjectEntry implements Cloneable{
             observations.remove(id);
             //setModDate();
         }
+        public Integer getObservationCount() {
+            try {
+                return observations.size();
+            } catch (NullPointerException E) {
+                return 0;
+            }
+        }
         public List<Integer> getObservationIDs(){
 
             Log.i("ProjectEntry","getObservationIDs called");
             List<Integer> IDs = null;
+            Log.i("ProjectEntry getObsID",observations.keySet().toString());
             try{
                 for(Map.Entry<Integer,Observation> entry : observations.entrySet()){
                     Integer key = entry.getKey();
@@ -309,6 +318,7 @@ class ProjectEntry implements Cloneable{
                 }
                 return IDs;
             }catch (NullPointerException E){
+                Log.i("ProjectEntry","ObservationID NullPointerException");
                 return IDs;
             }
 
