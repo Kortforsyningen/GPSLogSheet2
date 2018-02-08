@@ -69,6 +69,7 @@ public class UpdateActivity extends Activity{
         private Context mContext;
         private ProgressDialog pd;
         private Activity activity;
+        private SharedPreferences prefs;
 
         //private SyncDataFTP(Context context) {
         private SyncDataFTP(Activity activity) {
@@ -89,6 +90,7 @@ public class UpdateActivity extends Activity{
         private Boolean fixedpoints = false;
         private Boolean instruments = false;
         private Boolean rods = false;
+        private Boolean recipe = false;
 
         private int reply;
 
@@ -99,7 +101,7 @@ public class UpdateActivity extends Activity{
             showProgressDialog();
 
             super.onPreExecute();
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
+            prefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
 
             username = prefs.getString("credentials_ftp_user", "");
             password = prefs.getString("credentials_ftp_password", "");
@@ -107,12 +109,15 @@ public class UpdateActivity extends Activity{
             host = prefs.getString("credentials_ftp_host", "");
             path = prefs.getString("credentials_ftp_path", "");
 
+            //Downloads
             alarms = prefs.getBoolean("switch_preference_alarms",true);
             antennas = prefs.getBoolean("switch_preference_antennas",true);
             fixedpoints = prefs.getBoolean("switch_preference_points",true);
             instruments = prefs.getBoolean("switch_preference_instruments",true);
             rods = prefs.getBoolean("switch_preference_rods",true);
-            //
+            recipe = prefs.getBoolean("switch_preference_recipe", true);
+
+            // Uploads
             images = prefs.getBoolean("switch_preference_images",false);
             projects = prefs.getBoolean("switch_preference_projects",false);
 
@@ -122,7 +127,7 @@ public class UpdateActivity extends Activity{
         @Override
         protected CharSequence doInBackground(Context... params) {
             // Check if anything is supposed to be updated at all:
-            if (projects || alarms || antennas || fixedpoints || instruments || rods) {
+            if (projects || alarms || antennas || fixedpoints || instruments || rods || recipe) {
 
 
                 db = DataBaseHandler.getInstance(mContext);
@@ -394,6 +399,58 @@ public class UpdateActivity extends Activity{
 
                             }
                             br.close();
+                            inputStream.close();
+                        }
+
+                        ftpClient.completePendingCommand();
+                    }
+                    //Recipe
+                    if (recipe) {
+                        filename = "recipe.txt";
+                        // Retrieve file as inputstream
+                        InputStream inputStream = ftpClient.retrieveFileStream(filename);
+                        Log.i("FTP", ftpClient.getReplyString());
+
+                        reply = ftpClient.getReplyCode();
+                        if (!FTPReply.isPositivePreliminary(reply)) {
+                            ftpClient.disconnect();
+                            return filename + " not found in settings directory.";
+                        }
+                        if (inputStream != null) {
+                            // If there is a file, delete old entries in database.
+                            //db.deleteInstrumentTable();
+
+                            // Turn inputstream into a bufferedReader
+                            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+
+                            StringBuilder recipeStringBuilder = new StringBuilder();
+
+                            String line = "";
+                            // While there are lines to read
+                            while ((line = br.readLine()) != null) {
+                                //Split each line into code and comment
+                                String[] str = line.split("//");
+                                if (str.length > 1) {
+                                    Log.i("Recipe Comment", str[1]); // Log comment
+                                }
+
+                                if (recipeStringBuilder.length() > 0) {
+                                    if (recipeStringBuilder.charAt(recipeStringBuilder.length() - 1) != ' ' ){
+                                        //But only if it is not empty
+                                        //If the previous char in the sequence isn't a whitespace, add one
+                                        recipeStringBuilder.append(' ');
+                                    }
+                                }
+
+                                //Add line to recipe
+                                try{recipeStringBuilder.append(str[0]);}
+                                catch(IndexOutOfBoundsException e){Log.i("Recipe", "empty line");}
+                            }
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putString("batch_recipe_string",recipeStringBuilder.toString());
+                            editor.apply();
+                            br.close();
+                            Log.i("Recipe:", prefs.getString("batch_recipe_string",""));
                             inputStream.close();
                         }
 

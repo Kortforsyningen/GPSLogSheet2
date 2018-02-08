@@ -8,7 +8,7 @@
     <!-- This preference simply launches an intent when selected. Use this UI sparingly, per
          design guidelines. -->
     <!-- TODO: Better text for "points" -->
-    <PreferenceCategory android:title="What to synchronize">
+    <PreferenceCategory android:title="What to upload"  >
         <SwitchPreference
             android:defaultValue="false"
             android:title="@string/settings_projects"
@@ -17,6 +17,8 @@
             android:defaultValue="false"
             android:title="@string/settings_images"
             android:key="switch_preference_images" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="What to download">
         <SwitchPreference
             android:defaultValue="true"
             android:title="@string/settings_points"
@@ -37,6 +39,10 @@
             android:defaultValue="true"
             android:title="@string/settings_alarms"
             android:key="switch_preference_alarms" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:title="@string/settings_recipe"
+            android:key="switch_preference_recipe" />
     </PreferenceCategory>
     <PreferenceCategory android:title="When to synchronize">
 
