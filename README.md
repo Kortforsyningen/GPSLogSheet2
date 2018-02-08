@@ -27,9 +27,63 @@ The file gpslogsheet2.apk can now be sideloaded onto the device.
 
 ## Usage
 
-First time the app is run, it is necessary to update the internal database with settings from a server.
+First time the app is run, it is necessary to update the internal database with settings from a server (ftp).
 The server address, path (optional), username and password, must be set. The app will then attempt to fill the database 
 
+In the specified path, or root if no path specified, folders called 'settings', 'projects' and 'images' must exist.
+In the settings folder the following files must exist:
+
+- **fixedpoints.csv**:
+    Contains a comma seperated list of fixedpoints with the fields Name (four charecter, alphanumeric),
+    hs_name, easting and northing. Example: "KMS3, K-01-02584, 12.5362469, 55.7046712"
+
+- **alarms.csv**:
+
+- **antennas.csv**:
+
+- **instruments.csv**:
+
+- **rods.csv**:
+
+- **recipe.txt**:  
+    
+      // recipe.txt
+      //
+      // Everything behind a comment is ignored
+      // "${<TOKEN>}" are tokens that act as placeholders for data to be inserted by GPSLogSheet2
+      // Example: "-O.r "${operator}"" Will become: "-O.r "OLDJO"" if operator is OLDJO
+      //
+      // Valid tokens are:
+      //  operator
+      //  gps_name
+      //  hs_name
+      //  antenna_name
+      //  antenna_height
+      //
+      //  YYYYmmdd
+      //  YYYY-mm-dd
+      //  YYYY (year)
+      //  YY (year, last two)
+      //  mm  (month)
+      //  ddd (day_of_year)
+      //  dd (day of month)
+      //  
+      //
+      //  The below (default) recreates the line from the original gpslogsheet
+      teqc -javad jps -O.obs L1L2C1P1P2D1D2S1S2
+      -O.r "${operator}"
+      -O.ag "KMS" //(agency?)
+      -O.o "${operator}"
+      -O.int 15.0 
+      -O.mo "${gps_name}" //(GPS_point name)  
+      -O.mn "${hs_name}" //(hs name)
+      -O.pe ${antenna_height} 0.000 0.000 //(antenna height followed by 0.000 0.000)
+      -O.an "${antenna_serial}" //(antena serial number)
+      -O.at "${antenna_name}" //(antenna name, spaces, NONE?)
+      -st ${YYYYmmdd}000015.000 //(set windowing start time YYYYmmdd + 000015.000)
+      -e ${YYYYmmdd}235945.000 //(set windowing end time YYYYmmdd + 235945.000) 
+      ${gps_name}.jps > ${gps_name}0${day_of_year}0.${YY}0 //(gps_point name, gps_point name dayofyear.year 0)
+    
 
 ## Development
 
@@ -42,13 +96,17 @@ Current progress:
 - [x] Create ETL (Extract, Transform, Load) functions
 - [x] Ability to save projects
 - [x] Ability to load projects
+- [ ] (Support for other postprocessing tool than TEQC)
+    - [x] Single line generated from recipe 
+    - [ ] Multiple lines
 - [ ] Generation of .bat scripts
+- [ ] Upload of .bat scripts
 - [ ] Upload of projects to server
-- [ ] Camera integration
+- [x] Camera integration
 - [x] GPS integration
 - [ ] Upload of projects (with pictures) to server
 - [ ] GUI reevaluation and optimization
-- [ ] (Support for other postprocessing tool than TEQC)
+
 
 Target Android SDK is 25 and min SDK is 22.
 
@@ -56,7 +114,7 @@ This app uses SQLite to handle its data. FTP (SFTP) for connectivity. GPS and th
 
 Projects are JSON (JavaScript Object Notation) objects and converted into strings and saved in the database as CLOBs (Character Large Object).
 
-Images taken with the camera are also saved in the database, as BLOBs (Binary Large Object)
+Images taken with the camera may also be saved in the database, as BLOBs (Binary Large Object)
 
 AppCompatPreferenceActivity is used for user preferences, such as username, passwords, update preferences etc.
 
