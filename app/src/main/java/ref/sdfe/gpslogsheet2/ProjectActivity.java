@@ -72,12 +72,11 @@ public class ProjectActivity extends AppCompatActivity {
     private static String current_projectDate;
     private static String current_projectModDate;
     private static String current_projectEndDate;
-
     private static String projectTextTemplate;
-
-    public static Boolean locationPermitted;
     private static InputFilter nameFilter;
     private static InputFilter numberFilter;
+
+    public static Boolean locationPermitted;
 
     // Setups
     public static String current_setup;
@@ -99,6 +98,9 @@ public class ProjectActivity extends AppCompatActivity {
     static public List<AlarmEntry> alarmEntries;
     static public List<AntennaEntry> antennaEntries;
     static public List<InstrumentEntry> instrumentEntries;
+
+    // String
+    static public String batchRecipeString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -863,6 +865,9 @@ public class ProjectActivity extends AppCompatActivity {
         } catch (NullPointerException e) {
             Log.i("ProjectActivity","getData(): Empty lists");
         }
+
+        //Get batchRecipe from sharedPrefs
+        batchRecipeString = prefs.getString("batch_recipe_string","");
 
         //Get readable database in order to get a list of projects
         //db = DataBaseHandler.getInstance(getApplicationContext());

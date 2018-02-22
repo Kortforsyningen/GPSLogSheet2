@@ -5,11 +5,15 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.text.StrSubstitutor;
 
 /**
  * Created by B028406 on 01-06-2017.
@@ -113,6 +117,53 @@ class ProjectEntry implements Cloneable{
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
+    public Map<String, String> generateValuesMap(Setup setup){
+
+        long endDateLocal;
+        //If no endDate assigned, assume one week after start date:
+        try{endDateLocal = endDate;}
+        catch(NullPointerException e){
+            endDateLocal = startDate + (7 * 4 * 3600 * 1000); //add one week in milliseconds
+        }
+        Calendar startCal = GregorianCalendar.getInstance();
+        startCal.setTimeInMillis(startDate);
+        Calendar endCal = GregorianCalendar.getInstance();
+        endCal.setTimeInMillis(endDateLocal);
+
+        Map<String, String> valuesMap = new HashMap<>();
+
+        DecimalFormat decimalFormat = new DecimalFormat("#.000");
+
+        valuesMap.put("project_name",name);
+
+        valuesMap.put("operator",operator);
+        valuesMap.put("gps_name",setup.fixedPoint);
+        valuesMap.put("hs_name",setup.hsName);
+
+        valuesMap.put("instrument",setup.instrument);
+
+        valuesMap.put("antenna_serial","666 TODO: Antenna Serial!");
+        valuesMap.put("antenna_height",decimalFormat.format(setup.antennaHeight));
+        valuesMap.put("antenna_name",setup.antenna);
+
+        Integer year = startCal.get(Calendar.YEAR);
+        Integer yearShort = year % 100; //remainder after dividing by 100
+        Integer dayOfYear = startCal.get(Calendar.DAY_OF_YEAR);
+        Integer month = startCal.get(Calendar.MONTH);
+        Integer dayOfMonth = startCal.get(Calendar.DAY_OF_MONTH);
+
+        valuesMap.put("YYYY", year.toString());
+        valuesMap.put("YY", yearShort.toString());
+        valuesMap.put("day_of_year", dayOfYear.toString());
+        SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
+        valuesMap.put("MM", monthFormat.format(startDate));
+        valuesMap.put("dd", dayOfMonth.toString());
+        SimpleDateFormat fullFormat = new SimpleDateFormat("yyyyMMdd");
+        //valuesMap.put("YYYYmmdd", year.toString() + month.toString() + dayOfMonth.toString());
+        valuesMap.put("YYYYmmdd",fullFormat.format(startDate));
+
+        return valuesMap;
+    }
 
     class Setup implements Cloneable{
 
@@ -145,6 +196,13 @@ class ProjectEntry implements Cloneable{
             this.id = id;
             setModDate();
         }
+
+        // Method that generates batch string
+        public String generateBatchString(String recipe, Map<String, String> valuesMap) {
+            StrSubstitutor substitutor = new StrSubstitutor(valuesMap);
+            return substitutor.replace(recipe);
+        }
+
 
         public int getId() {
             return id;

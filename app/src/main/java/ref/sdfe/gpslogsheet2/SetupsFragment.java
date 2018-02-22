@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import static android.app.Activity.RESULT_OK;
 import static java.lang.Math.sqrt;
@@ -54,6 +55,7 @@ public class SetupsFragment extends Fragment {
     ProjectEntry project;
     ProjectEntry.Setup setup;
     ProjectEntry.Setup setup_backup;
+    String batchRecipeString;
     static final int REQUEST_IMAGE_CAPTURE = 1;
     //private static final String CAPTURE_IMAGE_FILE_PROVIDER = "ref.sdfe.gpslogsheet2.provider";
     static final public Integer MY_PERMISSIONS_REQUEST_CAMERA = 200;
@@ -160,6 +162,7 @@ public class SetupsFragment extends Fragment {
         View view = inflater.inflate(R.layout.setup_tab_layout, container, false);
         id = getArguments().getInt("Id");
         project = ProjectActivity.project;
+        batchRecipeString = ProjectActivity.batchRecipeString;
         setup = project.getSetups().get(id);
 
 
@@ -418,9 +421,10 @@ public class SetupsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // CLEAR CODE HERE
+                useClearButton();
                 Log.i("SetupsFragment", "Clear Button Pressed!");
                 //TODO: Move this to a confirmation dialog.
-                fixedPointSpinner.setSelection(getIndex(fixedPointSpinner, gpsNames.get(0)));
+                //fixedPointSpinner.setSelection(getIndex(fixedPointSpinner, gpsNames.get(0)));
             }
         });
         camera_button.setOnClickListener(new View.OnClickListener() {
@@ -561,6 +565,11 @@ public class SetupsFragment extends Fragment {
         }
     }
 
+    private void useClearButton(){
+        Map<String,String> valuesMap = project.generateValuesMap(setup);
+        Log.i("genValuesMap","It ran: " + valuesMap.toString());
+        Log.i("BatchString: ", setup.generateBatchString(batchRecipeString, valuesMap));
+    }
     private void useCameraButton(){
         // Check permissions
         if (ContextCompat.checkSelfPermission(getActivity(),
