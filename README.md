@@ -13,7 +13,8 @@ Android app that facilitates the metadata collection for GPS measurements
 DRAFT!
 This is very much a work in progress.
 
-GPSLogSheet2 is a metadata collector and script generator for the height measurements performed for the reference network of GNNS stations.
+GPSLogSheet2 is a metadata collector and script generator for the height measurements performed for
+the reference network of GNNS stations.
 
 ## Installation
 
@@ -27,15 +28,17 @@ The file gpslogsheet2.apk can now be sideloaded onto the device.
 
 ## Usage
 
-First time the app is run, it is necessary to update the internal database with settings from a server (ftp).
-The server address, path (optional), username and password, must be set. The app will then attempt to fill the database 
+First time the app is run, it is necessary to update the internal database with settings from a
+server (ftp). The server address, path (optional), username and password, must be set. The app will
+then attempt to fill the database 
 
-In the specified path, or root if no path specified, folders called 'settings', 'projects' and 'images' must exist.
-In the settings folder the following files must exist:
+In the specified path, or root if no path specified, folders called 'settings', 'projects' and
+'images' must exist. In the settings folder the following files must exist:
 
 - **fixedpoints.csv**:
-    Contains a comma seperated list of fixedpoints with the fields Name (four charecter, alphanumeric),
-    hs_name, easting and northing. Example: "KMS3, K-01-02584, 12.5362469, 55.7046712"
+    Contains a comma seperated list of fixedpoints with the fields Name (four character,
+    alphanumeric), hs_name, easting and northing.
+    Example: "KMS3, K-01-02584, 12.5362469, 55.7046712"
 
 - **alarms.csv**:
 
@@ -99,10 +102,12 @@ Current progress:
 - [ ] (Support for other postprocessing tool than TEQC)
     - [x] Single line generated from recipe 
     - [ ] Multiple lines
-- [ ] Generation of .bat scripts
+- [ ] Generation of .bat scripts from the above recipe
 - [ ] Upload of .bat scripts
 - [ ] Upload of projects to server
 - [x] Camera integration
+    - [x] Takes and saves pictures locally
+    - [ ] Allow user to comment on, delete, rename pictures. 
 - [x] GPS integration
 - [ ] Upload of projects (with pictures) to server
 - [ ] GUI reevaluation and optimization
@@ -110,15 +115,62 @@ Current progress:
 
 Target Android SDK is 25 and min SDK is 22.
 
-This app uses SQLite to handle its data. FTP (SFTP) for connectivity. GPS and the camera for ease of use and data collection.
+This app uses SQLite to handle its data. FTP (SFTP) for connectivity. GPS and the camera for ease of
+use and data collection.
 
-Projects are JSON (JavaScript Object Notation) objects and converted into strings and saved in the database as CLOBs (Character Large Object).
+Projects are JSON (JavaScript Object Notation) objects and converted into strings and saved in the
+database as CLOBs (Character Large Object).
 
 Images taken with the camera may also be saved in the database, as BLOBs (Binary Large Object)
 
-AppCompatPreferenceActivity is used for user preferences, such as username, passwords, update preferences etc.
+AppCompatPreferenceActivity is used for user preferences, such as username, passwords, update
+preferences etc.
 
 Settings files on the server are stored as comma separated values, in separate files for each table.
+
+## App structure
+
+Here is a quick overview of the different classes in GPSLogSheet2
+
+### Visible to user (GUI):
+
+- [x] __MainActivity.java__ First activity the user is greeted with if no project is open.            
+    - [x] __SettingsActivity.java__ Here ftp settings can be set, and parameters can be downloaded.
+    - [x] __ProjectActivity.java__ Shown when loading or starting a new project
+        - [x] __ProjectSettingsFragment__ Subclass of ProjectActivity, here user can set project
+                                          name, operator, (__TODO: end date__), and delete project. 
+            - [ ] __SetupsFragment__ Here user can add setups and set fixedpoint, instrument,
+                                     antenna, alarm and take photos.
+                - [ ] __PhotoList.java__ List of photos taken, photos can be opened, (__TODO: delete,
+                                         rename, comment.__)
+        - [ ] __ObservationsFragment.java__ Here user can (__TODO: add measurements, select rods, see
+                                            list of past measurements in project__) 
+        - [ ] __MapsFragment.java__ TODO: Show a map of the surroundings based on device GPS or
+                                        chosen fixedpoint.
+        - [ ] __ExtrasFragment.java__ Placeholder fragment
+    - [ ] __Huh__
+        
+### Data structures
+The following classes mostly contain fields with corresponding getters and setters.
+- [x] __AlarmEntry.java__ 
+- [x] __AntennaEntry.java__ 
+- [x] __FixedpointEntry.java__ 
+- [x] __InstrumentEntry.java__ 
+- [x] __RodEntry.java__ 
+- [x] __ProjectEntry.java__ Contains project name, operator, start-, modification-, and end-dates,
+      as well as a list of *Setups*.
+      Implements [*Clonable*](https://docs.oracle.com/javase/7/docs/api/java/lang/Cloneable.html)
+      for backup purposes and uses [*gson*](https://github.com/google/gson) to generate
+      [*JSON*](https://www.w3schools.com/js/js_json_intro.asp) that can be stored in the database.                            
+    - [x] __Setup__ (subclass) Contains setup fields as well as a list of *Observations*. Has
+    method *generateBatchString* that returns a string suitable for a batch file, created from
+    project- and setup fields and rules specified in the *recipe.txt* file downloaded from the ftp
+    server.
+        - [x] __Observation__ (subclass)
+         
+
+### 
+        
 
 ## Android udvikling på SIA’s PC’er
 For at kunne køre Android Studio samt virtuelle Android enheder direkte fra Windows kræves følgende:
