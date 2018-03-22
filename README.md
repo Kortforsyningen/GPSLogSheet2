@@ -6,7 +6,7 @@ Android app that facilitates the metadata collection for GPS measurements
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Development](#developing)
+- [Development](#development)
 
 ## Introduction
 
@@ -130,12 +130,14 @@ Settings files on the server are stored as comma separated values, in separate f
 
 ## App structure
 
-Here is a quick overview of the different classes in GPSLogSheet2
+Here is a quick overview of the different classes in GPSLogSheet2. Some important methods are also
+describes. See comments in code for more depth.
 
 ### Visible to user (GUI):
 
 - [x] __MainActivity.java__ First activity the user is greeted with if no project is open.            
     - [x] __SettingsActivity.java__ Here ftp settings can be set, and parameters can be downloaded.
+        - [x] __UpdateActivity.java__ Shows a 
     - [x] __ProjectActivity.java__ Shown when loading or starting a new project
         - [x] __ProjectSettingsFragment__ Subclass of ProjectActivity, here user can set project
                                           name, operator, (__TODO: end date__), and delete project. 
@@ -169,71 +171,74 @@ The following classes mostly contain fields with corresponding getters and sette
         - [x] __Observation__ (subclass)
          
 
-### 
+### Database, functionality etc.
+The app uses both [*Shared Preferences*](https://developer.android.com/reference/android/content/SharedPreferences.html)
+and SQLite to store data and settings. GPS is handled by LocationHandler.java that uses [*LocationManager*](https://developer.android.com/reference/android/location/LocationManager.html).
+Communication with the server uses FTP and is handled by the SyncDataFTP class and uses
+[*Apache Commons FTPClient*](https://commons.apache.org/proper/commons-net/apidocs/org/apache/commons/net/ftp/FTPClient.html). 
+
+
+- [x] __DataBaseHandler.java__ Uses
+[*SQLiteDatabase*](https://developer.android.com/reference/android/database/sqlite/SQLiteDatabase.html)
+
+- [x] __LocationHandler.java__ uses [*LocationManager*](https://developer.android.com/reference/android/location/LocationManager.html).
+- [x] __AppCompatPreferenceActivity.java__ Used by SettingsActivity.java
+- [x] __SyncDataFTP__ (subclass of UpdateActivity.java)
+        Uses [*Apache Commons FTPClient*](https://commons.apache.org/proper/commons-net/apidocs/org/apache/commons/net/ftp/FTPClient.html).
         
 
-## Android udvikling på SIA’s PC’er
-For at kunne køre Android Studio samt virtuelle Android enheder direkte fra Windows kræves følgende:
+## Android udvikling på SIA’s PC’er *med* tablet/telefon til rådighed
 
-- 0.    Windows 7 (ikke Windows 10, da Hyper-V blokerer for virtualization og ikke kan slåes fra med de gældende sikkerhedsreger.
-- 1.	Virtualization slået til i BIOS
-- 2.	Android Studio
-- 3.	Intel HAXM
-- 4.	Git (versions styring)
+Bemærk: Inden programmer kan installeres med hjælp af en konto med administrator rettigheder, kræves det at denne konto først logger på computeren en enkelt gang. Herefter kan denne logge på midlertidigt ved installering af programmer.
 
-##Tænd for virtualization i BIOS.
+- Android Studio
+    - Hent Android Studio fra (https://developer.android.com/studio/index.html)
+    - Kør installeren (kræver administrator rettigheder)
+    - Android Studio foreslår muligvis at installere HAXM, spring dette over.
+- Git (versions styring)
+    - Hent Git (https://git-scm.com/download/win)
+    - Kør Installeren
+    - I Android Studio: Åbn ”Settings” (Ctrl + Alt + S)
+    - Navigér til ”Version Control” - > ”Git”
+    - I feltet ”Path to Git executable:” indtast da enten:
+    `C:\Users\<B-NUMMER>\AppData\Local\Programs\Git\cmd\git.exe`
+    eller
+    `C:\Brugere\<B-NUMMER>\AppData\Local\Programs\Git\cmd\git.exe`
+    - Brug knappen ”Test” for at sikre at det virker
+    - Man kan nu checke et projekt ud fra f.eks. Github:
+    ”Check out project from version control” -> ”Git”
+    ved at indtaste dennes adresse under feltet ”Git Repository URL:”.
+    Det anbefales at ”Parent Directory” sættes til en folder på roden af det lokale C-drev for bedst ydelse,
+    f.eks: `C:\dev\`
+    
+- Klargør Android tablet/telefon
+    - Sæt Android tablet/telefon i[developer mode](https://www.google.com/search?q=android+developer+mode)
+    - Tænd for USB debugging under *Developer Options* i enhedens indstillinger.
+    - Forbind enheden til PC'en med USB.
+    
+- (Valgfrit) Android Debug Bridge (ADB) + Database Browser
+    - __Følgende er kun nødvendigt hvis man vil inspicere database filen manuelt__.
+    - Find hvor Android Studio har placeret ADB, det kan f.eks. være:
+    - `C:\Users\<B-NUMMER>\AppData\Local\Android\sdk\platform-tools`
+    - I dette tilfælde kør følgende fra kommando prompten:
+    - `set PATH=%PATH%;C:\Users\<B-NUMMER>\AppData\Local\Android\sdk\platform-tools"`  
+    Det gør at man kan køre adb.exe hvor som helst.  
+    Specifikt gør det os i stand til at køre følgende, der kopierer appens SQLite database til en folder på C:
+    - `adb pull /data/data/ref.sdfe.gpslogsheet2/databases/GPSLogSheet2.db C:\dev\`
+    - Det her virker på virtuelle maskiner med API 22, men ikke på API 25. Der er blevet indført permissions.
+    *.db filen kan nu åbnes i f.eks. [*DB Browser for SQLite*](http://sqlitebrowser.org).    
 
-- 5.	Dette punkt kræver en adgangkode til BIOS som kun Statens IT har.
-- 6.	Genstart PC'en og tryk gentagne gange på F1 indtil et lås-ikon vises.
-- 7.	Adgangkoden indtastes efterfulgt af enter
-- 8.	Under "Security"->"Virtualization" ændres underpunkterne fra disabled til enabled.
+## Android udvikling på SIA’s PC’er *uden* tablet/telefon (Windows 7)
+For at kunne køre virtuelle Android enheder direkte fra Windows kræves, ud over punkterne foroven, følgende:
 
-Inden programmer kan installeres med hjælp af en konto med administrator rettigheder, kræves det at denne konto først logger på computeren en enkelt gang. Herefter kan denne logge på midlertidigt ved installering af programmer.
-
-## Android Studio
-
-- 9.	Hent Android Studio fra (https://developer.android.com/studio/index.html)
-- 10.	Kør installeren (kræver administrator rettigheder)
-- 11.	Android Studio foreslår muligvis at installere HAXM, spring dette over.
-
-## Intel HAXM
-
- - 12.	 Hent Intel HAXM (https://software.intel.com/en-us/android/articles/intel-hardware-accelerated-execution-manager)
- - 13.	Kør installeren (kræver administrator rettigheder)
-
-Man kan nu oprette et "virtual device" i Android Studio vha. Android Virtual Device Manager. Her er det nu vigtigt at man under "System Image" vælger et x86 eller x86-64 image.
-
-## GIT
-
-- 14.	Hent Git (https://git-scm.com/download/win)
-- 15.	Kør Installeren
-- 16.	I Android Studio: Åbn ”Settings” (Ctrl + Alt + S)
-- 17.	Navigér til ”Version Control” - > ”Git”
-- 18.	I feltet ”Path to Git executable:” indtast da enten:
-C:\Users\<B-NUMMER>\AppData\Local\Programs\Git\cmd\git.exe
-eller
-C:\Brugere\<B-NUMMER>\AppData\Local\Programs\Git\cmd\git.exe
-- 19.	Brug knappen ”Test” for at sikre at det virker
-
- Man kan nu checke et projekt ud fra f.eks. Github:
-”Check out project from version control” -> ”Git”
-ved at indtaste dennes adresse under feltet ”Git Repository URL:”.
-Det anbefales at ”Parent Directory” sættes til en folder på roden af det lokale C-drev for bedst ydelse.
-
-## Android Debug Bridge (ADB) & Database Browser
-
-Find hvor Android Studio har placeret ADB, det kan f.eks. være:
-
-C:\Users\<B-NUMMER>\AppData\Local\Android\sdk\platform-tools
-
-I dette tilfælde kør følgende fra kommando prompten:
-
-"set PATH=%PATH%;C:\Users\<B-NUMMER>\AppData\Local\Android\sdk\platform-tools"
-
-Det gør at man kan køre adb.exe hvor som helst.
-
-Specifikt gør det os i stand til at køre følgende, der kopierer appens SQLite database til en folder på C:
-"adb pull /data/data/ref.sdfe.gpslogsheet2/databases/GPSLogSheet2.db C:\dev\"
-Det her virker på virtuelle maskiner med API 22, men ikke på API 25. Der er blevet indført permissions.
-
-*.db filen kan nu åbnes i f.eks. "DB Browser for SQLite".
+- Windows 7 (ikke Windows 10, da Hyper-V blokerer for virtualization og ikke kan slåes fra med de gældende sikkerhedsreger.
+- Virtualization slået til i BIOS
+    - Check først om det allerede er slået til i *Task Manager* / *Jobliste*, under *Performance/Ydelse*, *CPU*, *Virtualization*. Ellers gør følgende:
+    - Dette punkt kræver en adgangkode til BIOS som kun Statens IT har.
+    - Genstart PC'en og tryk gentagne gange på F1 indtil et lås-ikon vises.
+    - Adgangkoden indtastes efterfulgt af enter
+    - Under "Security"->"Virtualization" ændres underpunkterne fra disabled til enabled.
+- Intel HAXM
+    - Hent [*Intel HAXM*](https://software.intel.com/en-us/android/articles/intel-hardware-accelerated-execution-manager)
+    - Kør installeren (kræver administrator rettigheder)
+    - Man kan nu oprette et "virtual device" i Android Studio vha. Android Virtual Device Manager. Her er det nu vigtigt at man under "System Image" vælger et x86 eller x86-64 image. 
