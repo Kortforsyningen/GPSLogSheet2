@@ -113,7 +113,7 @@ Current progress:
 - [ ] GUI reevaluation and optimization
 
 
-Target Android SDK is 25 and min SDK is 22.
+Target Android SDK is 25 and min SDK is ~~22~~ 24 (Updated to be able to use datePickerDialog).
 
 This app uses SQLite to handle its data. FTP (SFTP) for connectivity. GPS and the camera for ease of
 use and data collection.
