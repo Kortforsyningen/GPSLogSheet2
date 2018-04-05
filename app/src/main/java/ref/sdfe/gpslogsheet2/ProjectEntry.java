@@ -5,11 +5,15 @@ import android.util.Log;
 import com.google.gson.Gson;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 
 /**
@@ -379,19 +383,35 @@ class ProjectEntry implements Cloneable{
             }
         }
         public List<Integer> getObservationIDs(){
-
-            Log.i("ProjectEntry","getObservationIDs called");
-            List<Integer> IDs = null;
-            Log.i("ProjectEntry getObsID",observations.keySet().toString());
-            try{
+            //TODO: getObservationIDs: This is broken at the moment.
+//            Log.i("ProjectEntry","getObservationIDs called");
+//            List<Integer> IDs = null;
+//            Log.i("ProjectEntry getObsID",observations.keySet().toString());
+//            String[] ids = new String[] {};
+//            ids = observations.keySet().
+//            for(String s : observations.entrySet().) IDs.add(Integer.valueOf(s));
+//            try{
+//                //TODO: This keeps generating a nullpointer exception, even when keySet is populated
+//                for(Map.Entry<Integer,Observation> entry : observations.entrySet()){
+//                    Integer key = entry.getKey();
+//                    IDs.add(IDs.size()+1,key);
+//                    Log.i("ProjectEntry","ObservationID added");
+//                }
+//                return IDs;
+//            }catch (NullPointerException E){
+//                Log.i("ProjectEntry","ObservationID NullPointerException");
+//                return IDs;
+//            }
+            List <Integer> IDs = new ArrayList<>();
+            Log.i("getObservationIDs","start");
+            if (!observations.entrySet().isEmpty()){
+                Log.i("getObservationIDs","1");
                 for(Map.Entry<Integer,Observation> entry : observations.entrySet()){
-                    Integer key = entry.getKey();
-                    IDs.add(key);
-                    Log.i("ProjectEntry","ObservationID added");
+                    Log.i("getObservationIDs, ID:", entry.getKey().toString());
+                    IDs.add(entry.getKey());
                 }
                 return IDs;
-            }catch (NullPointerException E){
-                Log.i("ProjectEntry","ObservationID NullPointerException");
+            }else{
                 return IDs;
             }
 

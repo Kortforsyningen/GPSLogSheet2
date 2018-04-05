@@ -105,5 +105,6 @@
     <string name="invalid_name_query">Project name invalid, do you want to discard changes?</string>
     <string name="close_project_title">Close Project: Save or Discard changes?</string>
     <string name="settings_recipe">Batch file settings</string>
+    <string name="set_end_date_button">Set End Date</string>
 
 </resources>

@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "ref.sdfe.gpslogsheet2"
-        minSdkVersion 22
+        minSdkVersion 24
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -28,6 +28,7 @@ dependencies {
     compile 'com.android.support:support-v4:25.1.1'
     compile 'com.android.support:design:25.1.1'
     compile 'commons-net:commons-net:3.5' //Added this for FTP support #OLDJO
+    compile 'org.apache.commons:commons-lang3:3.5' //Added for StrSubstitutor #OLDJO
     compile 'com.google.android.gms:play-services-appindexing:8.4.0'
     compile 'com.android.support.constraint:constraint-layout:+'
     compile 'com.google.code.gson:gson:2.7' //Added this to turn objects into JSON easily #OLDJO

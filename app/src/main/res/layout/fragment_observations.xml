@@ -17,14 +17,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Add measurement"/>
+        <!--This list will hold the observation that the user makes-->
+        <ListView
+            android:id="@+id/observations_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+        </ListView>
 
     </LinearLayout>
 
-    <!--This list will hold the observation that the user makes-->
-    <ListView
-        android:id="@+id/observations_list"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
-    </ListView>
+
+
 
 </android.support.constraint.ConstraintLayout>

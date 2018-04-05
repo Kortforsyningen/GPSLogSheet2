@@ -1,6 +1,7 @@
 package ref.sdfe.gpslogsheet2;
 
 import android.app.Activity;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,7 +52,7 @@ public class ObservationList extends ArrayAdapter {
         TextView measurementText = (TextView) rowView.findViewById(R.id.text_measurement);
         TextView noteText = (TextView) rowView.findViewById(R.id.text_note);
 
-        textId.setText(id.get(position));
+        textId.setText(String.valueOf(observations.get(id.get(position)).getId()));
         Log.i("ObservationList","getView");
         measurementText.setText(String.valueOf(observations.get(id.get(position)).getMeasurement()));
 

@@ -97,6 +97,8 @@ public class ObservationsFragment extends Fragment {
         //TODO: observations adapter
         Log.i("getObservationCount", setup.getObservationCount().toString());
         if(setup.getObservationCount() < 1){
+
+            //TODO: Find way for code to work without this dummy item
             // add dummy observation
             setup.addObservation(0,0);
 
@@ -158,6 +160,7 @@ public class ObservationsFragment extends Fragment {
                     Log.i("ObservationFragment","Nothing to save!");
                 }else{
                     // SAVE CODE HERE
+                    setup.addObservation(1,Double.parseDouble(measurementField.getText().toString()));
 
                     //Get the setups from the project.
                     List<Integer> ids = setup.getObservationIDs();
@@ -169,6 +172,7 @@ public class ObservationsFragment extends Fragment {
                     int id;
                     try{id = Collections.max(ids) + 1;}catch(NullPointerException e){
                         id = 1;
+                        Log.i("NullPointer","Collections");
                     }
 
                     setup.addObservation(id,Double.parseDouble(measurementField.getText().toString()));
@@ -177,6 +181,7 @@ public class ObservationsFragment extends Fragment {
                     observationIDs = setup.getObservationIDs();
 
                     observationsAdapter.notifyDataSetChanged();
+                    populateObservations();
                     ((ArrayAdapter) observationsList.getAdapter()).notifyDataSetChanged();
 
                     addObservationDialog.dismiss();
@@ -238,9 +243,11 @@ public class ObservationsFragment extends Fragment {
                 Log.i("ObservationFragment", "Populating observations.");
                 for (Integer obs : observationIDs) {
                     }
+                observationsAdapter.notifyDataSetChanged();
                 }
             }catch(NullPointerException e){
-            Log.i("ObservationFragment", "Nullpointer Exception");
+            Log.i("ObservationFragment", "populate: Nullpointer Exception");
         }
+    onResume();
     }
 }

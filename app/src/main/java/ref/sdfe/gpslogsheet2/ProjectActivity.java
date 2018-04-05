@@ -104,8 +104,8 @@ public class ProjectActivity extends AppCompatActivity {
     static public List<InstrumentEntry> instrumentEntries;
 
     //Buttons and views
-    static public Button endDate_button;
-    static public TextView projectTextView;
+    //static public Button endDate_button;
+    //static public TextView projectTextView;
 
 
     // String
@@ -113,6 +113,7 @@ public class ProjectActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_project);
 
@@ -391,42 +392,6 @@ public class ProjectActivity extends AppCompatActivity {
 
     }
 
-    private static DatePickerDialog.OnDateSetListener datePickerListener = new DatePickerDialog.OnDateSetListener() {
-
-        // when dialog box is closed, below method will be called.
-        public void onDateSet(DatePicker view, int selectedYear,
-                              int selectedMonth, int selectedDay) {
-            int year = selectedYear;
-            int month = selectedMonth;
-            int day = selectedDay;
-            Log.i("datePicker","onDateSet called");
-//            endDate_button.setText(new StringBuilder().append(day).append("/")
-//                    .append(month + 1).append("/").append(year).append(" "));
-
-            GregorianCalendar cal = new GregorianCalendar();
-            cal.set(year, month, day);
-            // If end date is after start date,
-            if (cal.getTimeInMillis() > project.getStartDate()){
-                project.setEndDate(cal.getTimeInMillis());
-            }else{
-                //TODO: Alert dialog or Toast telling user the logical fallacy of having enddate < startdate
-                //Set enddate to one week after startdate:
-                project.setEndDate(project.getStartDate() + (7*24*3600*1000));
-
-                String alertString = "End Date must come after Start Date, set to one week later by default.";
-
-                int duration = Toast.LENGTH_LONG;
-                Toast toast = Toast.makeText(view.getContext(), alertString, duration);
-                toast.show();
-
-            }
-            current_projectEndDate = DateFormat.format("dd/MM/yyyy", new Date(project.getEndDate())).toString();
-            projectTextView.setText(String.format(projectTextTemplate,
-                    current_projectDate, current_projectModDate, current_projectEndDate));
-            endDate_button.setText("Change End Date");
-        }
-    };
-
     // TODO: setups list, and adapter to display them in the project activity.
     public void populateSetupsList() {
         setupsListIDs.clear();
@@ -650,6 +615,8 @@ public class ProjectActivity extends AppCompatActivity {
         /**
          * Project setting fragment
          */
+        Button endDate_button;
+        TextView projectTextView;
         private static final String ARG_SECTION_NUMBER = "1";
         private FragmentTabHost setupsTabHost;
         //private List<Fragment> setupsFragmentsList;
@@ -688,6 +655,33 @@ public class ProjectActivity extends AppCompatActivity {
 
                 }
             });
+
+            final DatePickerDialog.OnDateSetListener endDatePickerListener = new DatePickerDialog.OnDateSetListener() {
+
+                // when dialog box is closed, below method will be called.
+                public void onDateSet(DatePicker view, int selectedYear,
+                                      int selectedMonth, int selectedDay) {
+                    Log.i("datePicker","onDateSet called");
+                    GregorianCalendar cal = new GregorianCalendar();
+                    cal.set(selectedYear, selectedMonth, selectedDay);
+                    // If end date is after start date,
+                    if (cal.getTimeInMillis() > project.getStartDate()){
+                        project.setEndDate(cal.getTimeInMillis());
+                    }else{
+                        //TODO: Alert dialog or Toast telling user the logical fallacy of having enddate < startdate
+                        //Set end date to one week after start date:
+                        project.setEndDate(project.getStartDate() + (7*24*3600*1000));
+                        String alertString = "End Date must come after Start Date, set to one week after by default.";
+                        int duration = Toast.LENGTH_LONG;
+                        Toast toast = Toast.makeText(view.getContext(), alertString, duration);
+                        toast.show();
+                    }
+                    current_projectEndDate = DateFormat.format("dd/MM/yyyy", new Date(project.getEndDate())).toString();
+                    projectTextView.setText(String.format(projectTextTemplate,
+                            current_projectDate, current_projectModDate, current_projectEndDate));
+                    endDate_button.setText("Change End Date");
+                }
+            };
 
             // Input Text fields
             final EditText projectNameField = (EditText) rootView.findViewById(R.id.editProjectName);
@@ -835,7 +829,7 @@ public class ProjectActivity extends AppCompatActivity {
                     int month=cal.get(Calendar.MONTH);
                     int day=cal.get(Calendar.DATE);
 
-                    new DatePickerDialog(getContext(), datePickerListener,year ,month ,day).show();  //Call this on button click
+                    new DatePickerDialog(getContext(), endDatePickerListener,year ,month ,day).show();  //Call this on button click
 
                 }
             });
