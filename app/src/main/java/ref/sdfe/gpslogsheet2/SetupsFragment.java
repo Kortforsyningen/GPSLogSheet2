@@ -567,9 +567,12 @@ public class SetupsFragment extends Fragment {
     }
 
     private void useClearButton(){
+
+        //TODO: Currently using this button to test generateBatchString
         Map<String,String> valuesMap = project.generateValuesMap(setup);
         Log.i("genValuesMap","It ran: " + valuesMap.toString());
         Log.i("BatchString: ", setup.generateBatchString(batchRecipeString, valuesMap));
+        //End of test code.
     }
     private void useCameraButton(){
         // Check permissions
