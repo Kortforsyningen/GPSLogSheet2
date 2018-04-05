@@ -2,13 +2,10 @@ package ref.sdfe.gpslogsheet2;
 
 
 import android.util.Log;
-
 import com.google.gson.Gson;
-
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -20,13 +17,13 @@ import org.apache.commons.lang3.text.StrSubstitutor;
  */
 
 class ProjectEntry implements Cloneable{
-    private int id;
-    private String name;
-    private String operator;
-    private long startDate;
-    private long endDate;
-    private long modDate;
-    private HashMap<Integer,Setup> setups; //HasMap to store setups
+    private int id; //Unique ID
+    private String name; //Project Name
+    private String operator; //Operator
+    private long startDate; //Start date, set when project is first created
+    private long endDate; //TODO: Set by user when project is finished
+    private long modDate; //Modification date, set whenever a project parameter is changed
+    private HashMap<Integer,Setup> setups; //HashMap to store setups
 
     public HashMap<Integer, Setup> getSetups() {
         return setups;
@@ -139,12 +136,20 @@ class ProjectEntry implements Cloneable{
         valuesMap.put("operator",operator);
         valuesMap.put("gps_name",setup.fixedPoint);
         valuesMap.put("hs_name",setup.hsName);
-
         valuesMap.put("instrument",setup.instrument);
-
-        valuesMap.put("antenna_serial","666 TODO: Antenna Serial!");
         valuesMap.put("antenna_height",decimalFormat.format(setup.antennaHeight));
         valuesMap.put("antenna_name",setup.antenna);
+
+        int ANTENNA_TYPE_LENGTH=20; // TODO: Consider making this an updatable setting. Hardcoding is bad. :/
+        String paddingString = "";
+        while ( paddingString.length() < (ANTENNA_TYPE_LENGTH - (setup.antenna.length() + 4)) ){
+            paddingString = paddingString + " ";
+        }
+        paddingString = paddingString + "NONE";
+        Log.i("Padding:",paddingString);
+
+        valuesMap.put("antenna_name_padding",paddingString);
+        valuesMap.put("antenna_serial",setup.antenna_code);
 
         Integer year = startCal.get(Calendar.YEAR);
         Integer yearShort = year % 100; //remainder after dividing by 100
@@ -178,6 +183,16 @@ class ProjectEntry implements Cloneable{
         private String alarm;
         private int antennaId;
         private String antenna;
+
+        public String getAntenna_code() {
+            return antenna_code;
+        }
+
+        public void setAntenna_code(String antenna_code) {
+            this.antenna_code = antenna_code;
+        }
+
+        private String antenna_code;
         private String images;  //semicolon delimited string of paths
         private String imageTitles; //semicolon delimited string of titles
         private String imageDescriptions; //semicolon delimited string of descriptions/notes

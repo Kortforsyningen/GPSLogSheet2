@@ -75,7 +75,6 @@ public class ObservationsFragment extends Fragment {
 
         try {if (!observationIDs.isEmpty()){
             // If there are any observations
-            // TODO:
             observationsList.setAdapter(observationsAdapter);
         }else{
             //If there aren't any observations yet

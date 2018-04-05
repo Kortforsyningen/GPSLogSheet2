@@ -67,11 +67,9 @@ public class UpdateActivity extends Activity{
     private class SyncDataFTP extends AsyncTask<Context, Integer, CharSequence> {
 
         private Context mContext;
-        private ProgressDialog pd;
         private Activity activity;
         private SharedPreferences prefs;
 
-        //private SyncDataFTP(Context context) {
         private SyncDataFTP(Activity activity) {
             this.activity = activity;
             mContext = this.activity.getApplicationContext();
@@ -521,7 +519,8 @@ public class UpdateActivity extends Activity{
         }
         @Override
         protected void onPostExecute(CharSequence result) {
-            db.close();
+            try{db.close();}
+            catch(NullPointerException E){Log.i("UpdateActivity","Database never opened");};
             //CharSequence text = "onPostExecute executes!";
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(mContext, result, duration);

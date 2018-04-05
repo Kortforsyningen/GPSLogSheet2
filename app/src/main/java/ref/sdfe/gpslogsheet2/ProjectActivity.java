@@ -599,15 +599,15 @@ public class ProjectActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    // OLDJO: A Project setting fragment
+    // A
+
     public static class ProjectSettingsFragment extends Fragment {
         /**
-         * The fragment argument representing the section number for this
-         * fragment.
+         * Project setting fragment
          */
         private static final String ARG_SECTION_NUMBER = "1";
         private FragmentTabHost setupsTabHost;
-        private List<Fragment> setupsFragmentsList;
+        //private List<Fragment> setupsFragmentsList;
         private View rootView;
 
         public ProjectSettingsFragment() {

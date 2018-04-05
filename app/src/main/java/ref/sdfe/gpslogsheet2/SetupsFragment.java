@@ -304,6 +304,7 @@ public class SetupsFragment extends Fragment {
                     Log.i("SetupsFragment", "Selected Antenna: " + currentAntenna.getName());
                     setup.setAntenna(currentAntenna.getName());
                     setup.setAntennaId(currentAntenna.getID());
+                    setup.setAntenna_code(currentAntenna.getCode());
                     project.setModDate();
                 }
             }

@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
         Log.i("MainActivity","allowProject: " + allowProject.toString());
         Log.i("MainActivity","lastUpdateDate: " + prefs.getInt("lastUpdateDate",0));
         if (allowProject.equals(1)){
-            // TODO: clear lastOpenedProject? Or do this elsewhere?
+            // Clear last opened project (e.g. set it to -1)
             editor.putInt("lastOpenedProject", -1);
             editor.commit();
 

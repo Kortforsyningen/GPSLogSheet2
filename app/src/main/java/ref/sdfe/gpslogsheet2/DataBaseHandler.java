@@ -190,7 +190,7 @@ public class DataBaseHandler extends SQLiteOpenHelper {
         Log.i("SQL", "Project Entry added.");
     }
 
-    // Update project TODO: currently only changes name
+    // Update project
     public int updateProjectEntry(ProjectEntry projectEntry) {
         SQLiteDatabase db = this.getWritableDatabase();
 

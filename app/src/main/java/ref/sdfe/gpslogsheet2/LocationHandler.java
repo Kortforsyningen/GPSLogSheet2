@@ -4,19 +4,15 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-//import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-//import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
-
-import static android.content.Context.LOCATION_SERVICE;
 
 /**
  * Created by B028406 on 10/12/2017.
@@ -39,7 +35,6 @@ public class LocationHandler extends Service{
     private boolean locationFound = false;
     private boolean isGPSEnabled = false;
     private boolean isNetworkEnabled = false;
-//    private LocationHandler mInstance;
 
     LocationListener locationListener = new locationListener();
 
