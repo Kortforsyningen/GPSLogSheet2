@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Created by B028406 on 9/14/2017.
@@ -100,7 +101,7 @@ public class ObservationsFragment extends Fragment {
 
             //TODO: Find way for code to work without this dummy item
             // add dummy observation
-            setup.addObservation(0,0);
+            //setup.addObservation(0,0);
 
         }
 
@@ -160,7 +161,7 @@ public class ObservationsFragment extends Fragment {
                     Log.i("ObservationFragment","Nothing to save!");
                 }else{
                     // SAVE CODE HERE
-                    setup.addObservation(1,Double.parseDouble(measurementField.getText().toString()));
+                    //DUMMY observation: setup.addObservation(1,Double.parseDouble(measurementField.getText().toString()));
 
                     //Get the setups from the project.
                     List<Integer> ids = setup.getObservationIDs();
@@ -173,9 +174,13 @@ public class ObservationsFragment extends Fragment {
                     try{id = Collections.max(ids) + 1;}catch(NullPointerException e){
                         id = 1;
                         Log.i("NullPointer","Collections");
+                    }catch(NoSuchElementException e){
+                        id = 1;
+                        Log.i("NoSuchElementException","Collections");
                     }
 
                     setup.addObservation(id,Double.parseDouble(measurementField.getText().toString()));
+                    ProjectActivity.project.setModDate();
                     Log.i("ObservationsFragment","Observation added!");
                     observations = setup.getObservations();
                     observationIDs = setup.getObservationIDs();
@@ -241,9 +246,10 @@ public class ObservationsFragment extends Fragment {
             // If there are any observations
             if (!observationIDs.isEmpty()) {
                 Log.i("ObservationFragment", "Populating observations.");
-                for (Integer obs : observationIDs) {
-                    }
                 observationsAdapter.notifyDataSetChanged();
+//                for (Integer obs : observationIDs) {
+//                    }
+//                observationsAdapter.notifyDataSetChanged();
                 }
             }catch(NullPointerException e){
             Log.i("ObservationFragment", "populate: Nullpointer Exception");
