@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,9 @@ import java.util.Map;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
+
+import static ref.sdfe.gpslogsheet2.ObservationsFragment.setup;
+import static ref.sdfe.gpslogsheet2.ProjectActivity.project;
 
 /**
  * Created by B028406 on 01-06-2017.
@@ -25,7 +29,7 @@ class ProjectEntry implements Cloneable{
     private String name; //Project Name
     private String operator; //Operator
     private long startDate; //Start date, set when project is first created
-    private long endDate; //TODO: Set by user when project is finished
+    private long endDate; //endDate, set by user, used to generate batch file
     private long modDate; //Modification date, set whenever a project parameter is changed
     private HashMap<Integer,Setup> setups; //HashMap to store setups
 
@@ -118,18 +122,10 @@ class ProjectEntry implements Cloneable{
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
-    public Map<String, String> generateValuesMap(Setup setup){
+    public Map<String, String> generateValuesMap(Setup setup, long currentDate){
 
-        long endDateLocal;
-        //If no endDate assigned, assume one week after start date:
-        try{endDateLocal = endDate;}
-        catch(NullPointerException e){
-            endDateLocal = startDate + (7 * 4 * 3600 * 1000); //add one week in milliseconds
-        }
         Calendar startCal = GregorianCalendar.getInstance();
-        startCal.setTimeInMillis(startDate);
-        Calendar endCal = GregorianCalendar.getInstance();
-        endCal.setTimeInMillis(endDateLocal);
+        startCal.setTimeInMillis(currentDate);
 
         Map<String, String> valuesMap = new HashMap<>();
 
@@ -144,13 +140,14 @@ class ProjectEntry implements Cloneable{
         valuesMap.put("antenna_height",decimalFormat.format(setup.antennaHeight));
         valuesMap.put("antenna_name",setup.antenna);
 
-        int ANTENNA_TYPE_LENGTH=20; // TODO: Consider making this an updatable setting. Hardcoding is bad. :/
+        // TODO: Consider making this an updatable setting. Hardcoding is bad. :/
+        int ANTENNA_TYPE_LENGTH=20;
         String paddingString = "";
         while ( paddingString.length() < (ANTENNA_TYPE_LENGTH - (setup.antenna.length() + 4)) ){
             paddingString = paddingString + " ";
         }
         paddingString = paddingString + "NONE";
-        Log.i("Padding:",paddingString);
+        //Log.i("Padding:",paddingString);
 
         valuesMap.put("antenna_name_padding",paddingString);
         valuesMap.put("antenna_serial",setup.antenna_code);
@@ -165,11 +162,11 @@ class ProjectEntry implements Cloneable{
         valuesMap.put("YY", yearShort.toString());
         valuesMap.put("day_of_year", dayOfYear.toString());
         SimpleDateFormat monthFormat = new SimpleDateFormat("MM");
-        valuesMap.put("MM", monthFormat.format(startDate));
+        valuesMap.put("MM", monthFormat.format(currentDate));
         valuesMap.put("dd", dayOfMonth.toString());
         SimpleDateFormat fullFormat = new SimpleDateFormat("yyyyMMdd");
         //valuesMap.put("YYYYmmdd", year.toString() + month.toString() + dayOfMonth.toString());
-        valuesMap.put("YYYYmmdd",fullFormat.format(startDate));
+        valuesMap.put("YYYYmmdd",fullFormat.format(currentDate));
 
         return valuesMap;
     }
@@ -216,11 +213,29 @@ class ProjectEntry implements Cloneable{
             setModDate();
         }
 
+
+
+        public String generateBatchString(String batchRecipeString){
+            long curDate = project.getStartDate();
+            String output = "";
+            while( curDate < project.getEndDate()){
+                Map<String,String> valuesMap = project.generateValuesMap(this, curDate);
+                //Log.i("genValuesMap","It ran: " + valuesMap.toString());
+                //Log.i("BatchString: ", generateBatchStringLine(batchRecipeString, valuesMap));
+                output = output + "\n" + generateBatchStringLine(batchRecipeString, valuesMap);
+                curDate = curDate + 24*3600*1000; //Add one day
+            }
+            Log.i("BatchString: ", output);
+            return output;
+        }
+
         // Method that generates batch string
-        public String generateBatchString(String recipe, Map<String, String> valuesMap) {
+        public String generateBatchStringLine(String recipe, Map<String, String> valuesMap) {
+            String batchString;
             StrSubstitutor substitutor = new StrSubstitutor(valuesMap);
             return substitutor.replace(recipe);
         }
+
 
 
         public int getId() {
@@ -377,6 +392,7 @@ class ProjectEntry implements Cloneable{
         }
         public Integer getObservationCount() {
             try {
+                Log.i("getObservationCount", String.valueOf(observations.size()));
                 return observations.size();
             } catch (NullPointerException E) {
                 return 0;
@@ -460,10 +476,6 @@ class ProjectEntry implements Cloneable{
                 this.date = GregorianCalendar.DATE;
                 this.dayNumber = GregorianCalendar.DAY_OF_YEAR;
                 //setModDate();
-            }
-            public String GenerateBatch(){
-                // Placeholder for batch file generation method.
-                return "teqc.exe - etc.. etc...";
             }
         }
     }

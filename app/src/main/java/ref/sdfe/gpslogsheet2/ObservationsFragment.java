@@ -42,7 +42,8 @@ public class ObservationsFragment extends Fragment {
     //List<Double> measurements = new ArrayList<>();
 
     // Adapters
-    static ArrayAdapter observationsAdapter;
+
+    ArrayAdapter observationsAdapter;
 
     public ObservationsFragment() {
     }
@@ -77,6 +78,7 @@ public class ObservationsFragment extends Fragment {
         try {if (!observationIDs.isEmpty()){
             // If there are any observations
             observationsList.setAdapter(observationsAdapter);
+
         }else{
             //If there aren't any observations yet
 
@@ -102,39 +104,39 @@ public class ObservationsFragment extends Fragment {
             //TODO: Find way for code to work without this dummy item
             // add dummy observation
             //setup.addObservation(0,0);
+            Log.i("ObservationsFragment","No observations to show");
 
         }
 
         observationIDs = setup.getObservationIDs();
         observations = setup.getObservations();
 
-        try{
-            for (Integer id : observationIDs) {
-
-            }
-        }catch(NullPointerException e){
-            setup.addObservation(0,0);
-            Log.i("ObservationsFragment","Nullpointer exep");
-            observations = setup.getObservations();
-        }
-
-        //observationsAdapter = new ArrayAdapter<>(getContext(),android.R.layout.simple_spinner_item, observationIDs);
-
-
-        try {if (!observationIDs.isEmpty()){
-            // If there are any observations
-            // TODO:
-            observationsList.setAdapter(observationsAdapter);
-        }else{
-            //If there aren't any observations yet
-
-        }}catch(NullPointerException e){
-
-        }
+//        try{
+//            for (Integer id : observationIDs) {
+//
+//            }
+//        }catch(NullPointerException e){
+//            setup.addObservation(0,0);
+//            Log.i("ObservationsFragment","Nullpointer exep");
+//            observations = setup.getObservations();
+//        }
+//        observationsAdapter = new ArrayAdapter<>(getContext(),android.R.layout.simple_spinner_item, observationIDs);
+//
+//        try {if (!observationIDs.isEmpty()){
+//            // If there are any observations
+//            // TODO:
+//            observationsList.setAdapter(observationsAdapter);
+//        }else{
+//            //If there aren't any observations yet
+//
+//        }}catch(NullPointerException e){
+//
+//        }
 
         observationsAdapter = new ObservationList(this.getActivity(),observationIDs,observations);
         observationsList = (ListView) view.findViewById(R.id.observations_list);
         observationsList.setAdapter(observationsAdapter);
+        populateObservations();
 
         // Add observation dialog:
         final Dialog addObservationDialog = new Dialog(this.getContext());
@@ -184,12 +186,15 @@ public class ObservationsFragment extends Fragment {
                     Log.i("ObservationsFragment","Observation added!");
                     observations = setup.getObservations();
                     observationIDs = setup.getObservationIDs();
-
-                    observationsAdapter.notifyDataSetChanged();
-                    populateObservations();
+                    Log.i("ObservationsFragment", "Obs id's: " + setup.getObservationIDs().toString());
+                    //observationsAdapter.notifyDataSetChanged();
                     ((ArrayAdapter) observationsList.getAdapter()).notifyDataSetChanged();
-
+                    Log.i("ObservationsFragment","notifyDataSetChanged");
+                    populateObservations();
+                    Log.i("ObservationsFragment","populateObservations");
+                    observationsList.invalidate();
                     addObservationDialog.dismiss();
+
                 }
             }
         });
@@ -218,17 +223,19 @@ public class ObservationsFragment extends Fragment {
         if (observationsAdapter.isEmpty()) {
             populateObservations();
         }
+        populateObservations();
+        ((ArrayAdapter) observationsList.getAdapter()).notifyDataSetChanged();
 
         return view;
     }
 
-    public static void fragmentChanged(){
+    public void fragmentChanged(){
         /**
          * This gets called when user selects different setup in ProjectSettingsFragment
          * Makes sure that ObservationsFragment is working on correct setup.
          */
         try {
-            observationsAdapter.notifyDataSetChanged();
+            ((ArrayAdapter) observationsList.getAdapter()).notifyDataSetChanged();
         }catch(NullPointerException e){
             Log.i("ObservationsFragment", "fragmentChanged(), NPE");
     }
@@ -254,6 +261,7 @@ public class ObservationsFragment extends Fragment {
             }catch(NullPointerException e){
             Log.i("ObservationFragment", "populate: Nullpointer Exception");
         }
+        ((ArrayAdapter) observationsList.getAdapter()).notifyDataSetChanged();
     onResume();
     }
 }

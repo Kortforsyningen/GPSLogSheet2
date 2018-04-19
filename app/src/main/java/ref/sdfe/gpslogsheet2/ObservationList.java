@@ -73,6 +73,7 @@ public class ObservationList extends ArrayAdapter {
             measurementText.setText("Testing");
             //noteText.setText(obs.getRemark());
             noteText.setText("Still Testing");
+            Log.i("ObservationList", "Index within bounds");
         } catch (IndexOutOfBoundsException E) {
             Log.i("ObservationList", "Index out of bounds");
         }
@@ -98,12 +99,18 @@ public class ObservationList extends ArrayAdapter {
 
             // After remove row from list call this
             Log.i("ObservationList","Deleting Obs. " + String.valueOf(observations.get(position).getId()) );
-            ObservationsFragment.setup.deleteObservation(position);
+
+            //Delete observation in current setup
+            ObservationsFragment.setup.deleteObservation(id.get(position));
+
+            //Notify Project modified
             ProjectActivity.project.setModDate();
+
+            //Remove from list:
             observations.remove(position);
             id.remove(position);
-            //remove(ObservationList.this.getItem(position));
-            notifyDataSetChanged();
+
+
         }
     };
 }

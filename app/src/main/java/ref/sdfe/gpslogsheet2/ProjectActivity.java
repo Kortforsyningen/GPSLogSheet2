@@ -848,7 +848,8 @@ public class ProjectActivity extends AppCompatActivity {
                     //Set current setup
                     current_setup = tabId;
                     Log.i("ProjectActivity", "Current setup: " + tabId);
-                    ObservationsFragment.fragmentChanged();
+                    //ObservationsFragment.fragmentChanged();
+                    //((ArrayAdapter) ObservationsFragment.observationsList.getAdapter()).notifyDataSetChanged();
 
 
                     //TODO: Make this change the current setup in ObservationsFragment

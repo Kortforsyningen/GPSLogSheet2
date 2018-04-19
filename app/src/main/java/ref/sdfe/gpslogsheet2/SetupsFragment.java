@@ -569,9 +569,16 @@ public class SetupsFragment extends Fragment {
     private void useClearButton(){
 
         //TODO: Currently using this button to test generateBatchString
-        Map<String,String> valuesMap = project.generateValuesMap(setup);
-        Log.i("genValuesMap","It ran: " + valuesMap.toString());
-        Log.i("BatchString: ", setup.generateBatchString(batchRecipeString, valuesMap));
+        setup.generateBatchString(batchRecipeString);
+
+//        long curDate = project.getStartDate();
+//        while( curDate < project.getEndDate()){
+//            Map<String,String> valuesMap = project.generateValuesMap(setup, curDate);
+//            Log.i("genValuesMap","It ran: " + valuesMap.toString());
+//            Log.i("BatchString: ", setup.generateBatchStringLine(batchRecipeString, valuesMap));
+//            curDate = curDate + 24*3600*1000; //Add one day
+//        }
+
         //End of test code.
     }
     private void useCameraButton(){
