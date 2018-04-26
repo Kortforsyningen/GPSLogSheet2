@@ -569,7 +569,7 @@ public class SetupsFragment extends Fragment {
     private void useClearButton(){
 
         //TODO: Currently using this button to test generateBatchString
-        setup.generateBatchString(batchRecipeString);
+        setup.generateBatchString(batchRecipeString, project);
 
 //        long curDate = project.getStartDate();
 //        while( curDate < project.getEndDate()){
@@ -654,7 +654,7 @@ public class SetupsFragment extends Fragment {
                 Bitmap imageBitmap = BitmapFactory.decodeFile(image,bitmapOptions);
 
                 photos.add(imageBitmap);
-                //TODO: phot text
+                //TODO: photo text
                 photoPaths.add(image);
                 Log.i("SetupsFragment","Populated photo.");
             }

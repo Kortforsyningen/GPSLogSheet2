@@ -17,8 +17,6 @@ import java.util.Map;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 
-import static ref.sdfe.gpslogsheet2.ObservationsFragment.setup;
-import static ref.sdfe.gpslogsheet2.ProjectActivity.project;
 
 /**
  * Created by B028406 on 01-06-2017.
@@ -215,7 +213,7 @@ class ProjectEntry implements Cloneable{
 
 
 
-        public String generateBatchString(String batchRecipeString){
+        public String generateBatchString(String batchRecipeString, ProjectEntry project){
             long curDate = project.getStartDate();
             String output = "";
             while( curDate < project.getEndDate()){

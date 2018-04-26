@@ -14,7 +14,10 @@ import android.widget.Toast;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+
+import static ref.sdfe.gpslogsheet2.ProjectActivity.project;
 
 /**
  * Created by B028406 on 10/30/2017.
@@ -25,10 +28,10 @@ public class ObservationList extends ArrayAdapter {
     private final List<Integer> id;
     private final ArrayList<ProjectEntry.Setup.Observation> observations;
 
-    public ObservationList(Activity context, List<Integer> id, HashMap<Integer, ProjectEntry.Setup.Observation> observations) {
+    public ObservationList(Activity context, List<Integer> id, HashMap<Integer, ProjectEntry.Setup.Observation> observationsHashMap) {
         super(context, R.layout.list_observation, id);
         this.context = context;
-        this.observations = new ArrayList<>(observations.values());
+        this.observations = new ArrayList<>(observationsHashMap.values());
         this.id = id;
 
     }
@@ -44,8 +47,12 @@ public class ObservationList extends ArrayAdapter {
     }
 
     public long getItemId(int position) {
-        return position;
+        //return position;
+        return id.get(position);
     }
+//    public Object getItem(int position){
+//        return observations.get(position);
+//    }
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
@@ -66,13 +73,19 @@ public class ObservationList extends ArrayAdapter {
 
         Log.i("ObservationList", "getView");
         try {
-            ProjectEntry.Setup.Observation obs = observations.get(id.get(position));
+            //ProjectEntry.Setup.Observation obs = observations.get(id.get(position));
+            ProjectEntry.Setup.Observation obs = observations.get(position);
 
             textId.setText(String.valueOf(obs.getId()));
             //measurementText.setText(String.valueOf(obs.getMeasurement()));
-            measurementText.setText("Testing");
+            //measurementText.setText("Testing");
+            Double measurement = obs.getMeasurement();
+            measurementText.setText(measurement.toString() + " unit");
+            //measurementText.setText(String.format(Locale.getDefault()));
+
             //noteText.setText(obs.getRemark());
             noteText.setText("Still Testing");
+
             Log.i("ObservationList", "Index within bounds");
         } catch (IndexOutOfBoundsException E) {
             Log.i("ObservationList", "Index out of bounds");
@@ -101,14 +114,18 @@ public class ObservationList extends ArrayAdapter {
             Log.i("ObservationList","Deleting Obs. " + String.valueOf(observations.get(position).getId()) );
 
             //Delete observation in current setup
-            ObservationsFragment.setup.deleteObservation(id.get(position));
+            //ObservationsFragment.setup.deleteObservation(id.get(position));
+            ObservationsFragment.observationsAdapter.remove(id.get(position));
+            ObservationsFragment.observationsAdapter.notifyDataSetChanged();
+            //ObservationsFragment.removeObservation(id.get(position));
+
 
             //Notify Project modified
-            ProjectActivity.project.setModDate();
+            //ProjectActivity.project.setModDate();
 
             //Remove from list:
-            observations.remove(position);
-            id.remove(position);
+            //observations.remove(position);
+            //id.remove(position);
 
 
         }

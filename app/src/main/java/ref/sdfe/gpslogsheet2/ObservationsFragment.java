@@ -33,17 +33,12 @@ public class ObservationsFragment extends Fragment {
     private static final String ARG_SECTION_NUMBER = "2";
 
     //public static String setupId;
-    public static ProjectEntry.Setup setup;
+    public ProjectEntry.Setup setup;
     HashMap<Integer, ProjectEntry.Setup.Observation> observations;
-    List <Integer> observationIDs;
-    ListView observationsList;
+    public List <Integer> observationIDs;
+    public ListView observationsList;
 
-    // Lists
-    //List<Double> measurements = new ArrayList<>();
-
-    // Adapters
-
-    ArrayAdapter observationsAdapter;
+    public static ArrayAdapter observationsAdapter;
 
     public ObservationsFragment() {
     }
@@ -59,6 +54,10 @@ public class ObservationsFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+//    public void removeObservation(int id){
+//        setup.deleteObservation(id);
+//        observationIDs.remove(id);
+//    }
     @Override
     public void onPause() {
         super.onPause();
@@ -136,6 +135,7 @@ public class ObservationsFragment extends Fragment {
         observationsAdapter = new ObservationList(this.getActivity(),observationIDs,observations);
         observationsList = (ListView) view.findViewById(R.id.observations_list);
         observationsList.setAdapter(observationsAdapter);
+
         populateObservations();
 
         // Add observation dialog:
@@ -161,6 +161,8 @@ public class ObservationsFragment extends Fragment {
                 if (measurementField.getText().toString().isEmpty()){
                     //Nothing to save
                     Log.i("ObservationFragment","Nothing to save!");
+                    //TODO: Add a warning?
+                    addObservationDialog.dismiss();
                 }else{
                     // SAVE CODE HERE
                     //DUMMY observation: setup.addObservation(1,Double.parseDouble(measurementField.getText().toString()));
@@ -172,8 +174,11 @@ public class ObservationsFragment extends Fragment {
 //                    }
                     Log.i("ObservationFragment",String.valueOf(ids));
                     // Find maximum ID and add one
-                    int id;
-                    try{id = Collections.max(ids) + 1;}catch(NullPointerException e){
+                    Integer id;
+                    try{
+                        id = Collections.max(ids) + 1;
+                        Log.i("ObservationsFragment", "id = " + id.toString());
+                    }catch(NullPointerException e){
                         id = 1;
                         Log.i("NullPointer","Collections");
                     }catch(NoSuchElementException e){
@@ -187,12 +192,16 @@ public class ObservationsFragment extends Fragment {
                     observations = setup.getObservations();
                     observationIDs = setup.getObservationIDs();
                     Log.i("ObservationsFragment", "Obs id's: " + setup.getObservationIDs().toString());
-                    //observationsAdapter.notifyDataSetChanged();
-                    ((ArrayAdapter) observationsList.getAdapter()).notifyDataSetChanged();
+                    observationsAdapter.notifyDataSetChanged();
+                    observationsList.invalidate();
+
                     Log.i("ObservationsFragment","notifyDataSetChanged");
                     populateObservations();
                     Log.i("ObservationsFragment","populateObservations");
-                    observationsList.invalidate();
+                    //observationsList.invalidate();
+                    observationsAdapter.notifyDataSetChanged();
+                    ((ArrayAdapter) observationsList.getAdapter()).notifyDataSetChanged();
+
                     addObservationDialog.dismiss();
 
                 }
@@ -262,6 +271,10 @@ public class ObservationsFragment extends Fragment {
             Log.i("ObservationFragment", "populate: Nullpointer Exception");
         }
         ((ArrayAdapter) observationsList.getAdapter()).notifyDataSetChanged();
+        observationsList.invalidate();
+        //getParentFragment().getView().invalidate();
+        this.fragmentChanged();
+
     onResume();
     }
 }
