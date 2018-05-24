@@ -23,7 +23,8 @@ public class PhotoList extends ArrayAdapter {
     private final List<Bitmap> photo;
 
     public PhotoList(Activity context,
-                     List<String> text, List<Bitmap> photo) {
+                     List<String> text,
+                     List<Bitmap> photo) {
         super(context, R.layout.list_photo, text);
         this.context = context;
         this.text = text;

@@ -34,11 +34,15 @@ public class ObservationsFragment extends Fragment {
 
     //public static String setupId;
     public ProjectEntry.Setup setup;
-    HashMap<Integer, ProjectEntry.Setup.Observation> observations;
-    public List <Integer> observationIDs;
-    public ListView observationsList;
+    HashMap<Integer, ProjectEntry.Setup.Observation> observationsHashMap;
+    List<ProjectEntry.Setup.Observation> observations;
 
-    public static ArrayAdapter observationsAdapter;
+    //ArrayAdapter observationsAdapter;
+    ObservationList observationsAdapter;
+    ListView observationsList;
+
+    //ArrayList<Integer> observationIDs;
+    List<Integer> observationIDs;
 
     public ObservationsFragment() {
     }
@@ -54,7 +58,8 @@ public class ObservationsFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
-//    public void removeObservation(int id){
+
+    //    public void removeObservation(int id){
 //        setup.deleteObservation(id);
 //        observationIDs.remove(id);
 //    }
@@ -62,7 +67,7 @@ public class ObservationsFragment extends Fragment {
     public void onPause() {
         super.onPause();
         setup = ProjectActivity.project.getSetups().get(SetupsFragment.id);
-        Log.i("ObservationsFragment","onPause, Setup selected: " + setup.getId());
+        Log.i("ObservationsFragment", "onPause, Setup selected: " + setup.getId());
     }
 
     @Override
@@ -71,17 +76,19 @@ public class ObservationsFragment extends Fragment {
 
         // Get setup in which to add measurements
         setup = ProjectActivity.project.getSetups().get(SetupsFragment.id);
-        Log.i("ObservationsFragment","onResume, Setup selected: " + setup.getId());
+        Log.i("ObservationsFragment", "onResume, Setup selected: " + setup.getId());
 
 
-        try {if (!observationIDs.isEmpty()){
-            // If there are any observations
-            observationsList.setAdapter(observationsAdapter);
+        try {
+            if (!observationIDs.isEmpty()) {
+                // If there are any observations
+                observationsList.setAdapter(observationsAdapter);
 
-        }else{
-            //If there aren't any observations yet
+            } else {
+                //If there aren't any observations yet
 
-        }}catch(NullPointerException e){
+            }
+        } catch (NullPointerException e) {
 
         }
         Log.i("ObservationsFragment", "onResume()");
@@ -94,21 +101,30 @@ public class ObservationsFragment extends Fragment {
 
         // Get setup in which to add measurements
         setup = ProjectActivity.project.getSetups().get(SetupsFragment.id);
-        Log.i("ObservationsFragment","OnCreateView, Setup selected: " + setup.getId());
+        Log.i("ObservationsFragment", "OnCreateView, Setup selected: " + setup.getId());
 
         //TODO: observations adapter
         Log.i("getObservationCount", setup.getObservationCount().toString());
-        if(setup.getObservationCount() < 1){
+        if (setup.getObservationCount() < 1) {
 
             //TODO: Find way for code to work without this dummy item
             // add dummy observation
             //setup.addObservation(0,0);
-            Log.i("ObservationsFragment","No observations to show");
+            Log.i("ObservationsFragment", "No observations to show");
 
         }
 
         observationIDs = setup.getObservationIDs();
-        observations = setup.getObservations();
+        observationsHashMap = setup.getObservations();
+
+        // Turn hashmap into List
+        //observations = new ArrayList<>(observationsHashMap.values());
+        if (observations == null){
+            observations = new ArrayList<>(observationsHashMap.values());
+        } else {
+            observations.addAll(observationsHashMap.values());
+
+        }
 
 //        try{
 //            for (Integer id : observationIDs) {
@@ -132,7 +148,7 @@ public class ObservationsFragment extends Fragment {
 //
 //        }
 
-        observationsAdapter = new ObservationList(this.getActivity(),observationIDs,observations);
+        observationsAdapter = new ObservationList(this.getActivity(), observationIDs, observations);
         observationsList = (ListView) view.findViewById(R.id.observations_list);
         observationsList.setAdapter(observationsAdapter);
 
@@ -158,12 +174,12 @@ public class ObservationsFragment extends Fragment {
             public void onClick(View v) {
 
 
-                if (measurementField.getText().toString().isEmpty()){
+                if (measurementField.getText().toString().isEmpty()) {
                     //Nothing to save
-                    Log.i("ObservationFragment","Nothing to save!");
+                    Log.i("ObservationFragment", "Nothing to save!");
                     //TODO: Add a warning?
                     addObservationDialog.dismiss();
-                }else{
+                } else {
                     // SAVE CODE HERE
                     //DUMMY observation: setup.addObservation(1,Double.parseDouble(measurementField.getText().toString()));
 
@@ -172,32 +188,41 @@ public class ObservationsFragment extends Fragment {
 //                    for(Integer id : ids){
 //                        Log.i("ObsFragment, IDS",id.toString());
 //                    }
-                    Log.i("ObservationFragment",String.valueOf(ids));
+                    Log.i("ObservationFragment", String.valueOf(ids));
                     // Find maximum ID and add one
                     Integer id;
-                    try{
+                    try {
                         id = Collections.max(ids) + 1;
                         Log.i("ObservationsFragment", "id = " + id.toString());
-                    }catch(NullPointerException e){
+                    } catch (NullPointerException e) {
                         id = 1;
-                        Log.i("NullPointer","Collections");
-                    }catch(NoSuchElementException e){
+                        Log.i("NullPointer", "Collections");
+                    } catch (NoSuchElementException e) {
                         id = 1;
-                        Log.i("NoSuchElementException","Collections");
+                        Log.i("NoSuchElementException", "Collections");
                     }
 
-                    setup.addObservation(id,Double.parseDouble(measurementField.getText().toString()));
+                    setup.addObservation(id, Double.parseDouble(measurementField.getText().toString()));
                     ProjectActivity.project.setModDate();
-                    Log.i("ObservationsFragment","Observation added!");
-                    observations = setup.getObservations();
+                    Log.i("ObservationsFragment", "Observation added!");
+                    //observations = setup.getObservations();
+                    observationsHashMap = setup.getObservations();
+                    if (observations == null){
+                        observations = new ArrayList<>(observationsHashMap.values());
+                    } else {
+                      observations.addAll(observationsHashMap.values());
+                    }
                     observationIDs = setup.getObservationIDs();
                     Log.i("ObservationsFragment", "Obs id's: " + setup.getObservationIDs().toString());
-                    observationsAdapter.notifyDataSetChanged();
                     observationsList.invalidate();
+                    observationsAdapter.notifyDataSetChanged();
+                    //view.invalidate();
 
-                    Log.i("ObservationsFragment","notifyDataSetChanged");
+
+
+                    Log.i("ObservationsFragment", "notifyDataSetChanged");
                     populateObservations();
-                    Log.i("ObservationsFragment","populateObservations");
+                    Log.i("ObservationsFragment", "populateObservations");
                     //observationsList.invalidate();
                     observationsAdapter.notifyDataSetChanged();
                     ((ArrayAdapter) observationsList.getAdapter()).notifyDataSetChanged();
@@ -219,7 +244,6 @@ public class ObservationsFragment extends Fragment {
         });
 
 
-
         // Add observation button
         Button add_button = (Button) view.findViewById(R.id.add_observation_button);
         add_button.setOnClickListener(new View.OnClickListener() {
@@ -238,25 +262,32 @@ public class ObservationsFragment extends Fragment {
         return view;
     }
 
-    public void fragmentChanged(){
+    public void fragmentChanged() {
         /**
          * This gets called when user selects different setup in ProjectSettingsFragment
          * Makes sure that ObservationsFragment is working on correct setup.
          */
         try {
             ((ArrayAdapter) observationsList.getAdapter()).notifyDataSetChanged();
-        }catch(NullPointerException e){
+        } catch (NullPointerException e) {
             Log.i("ObservationsFragment", "fragmentChanged(), NPE");
-    }
+        }
 
         Log.i("ObservationsFragment", "fragmentChanged()");
 //        Toast.makeText(actvity, "Fragment Changed", Toast.LENGTH_SHORT).show();
     }
 
-    private void populateObservations(){
+    private void populateObservations() {
 
         Log.i("ObservationFragment", "Attempting to populate observations.");
-        observations = setup.getObservations();
+        //observations = setup.getObservations();
+        observationsHashMap = setup.getObservations();
+        //observations = new ArrayList<>(observationsHashMap.values());
+        if (observations == null){
+            observations = new ArrayList<>(observationsHashMap.values());
+        } else {
+            observations.addAll(observationsHashMap.values());
+        }
         observationIDs = setup.getObservationIDs();
         try {
             // If there are any observations
@@ -266,8 +297,8 @@ public class ObservationsFragment extends Fragment {
 //                for (Integer obs : observationIDs) {
 //                    }
 //                observationsAdapter.notifyDataSetChanged();
-                }
-            }catch(NullPointerException e){
+            }
+        } catch (NullPointerException e) {
             Log.i("ObservationFragment", "populate: Nullpointer Exception");
         }
         ((ArrayAdapter) observationsList.getAdapter()).notifyDataSetChanged();
@@ -275,6 +306,10 @@ public class ObservationsFragment extends Fragment {
         //getParentFragment().getView().invalidate();
         this.fragmentChanged();
 
-    onResume();
+        onResume();
     }
 }
+//    public static void deleteObservation(int id){
+//        observationsAdapter.remove(id);
+//        observationsAdapter.notifyDataSetChanged();
+//    }}

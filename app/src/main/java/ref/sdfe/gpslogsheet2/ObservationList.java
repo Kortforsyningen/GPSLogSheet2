@@ -26,12 +26,16 @@ import static ref.sdfe.gpslogsheet2.ProjectActivity.project;
 public class ObservationList extends ArrayAdapter {
     private final Activity context;
     private final List<Integer> id;
-    private final ArrayList<ProjectEntry.Setup.Observation> observations;
+    private final List<ProjectEntry.Setup.Observation> observation;
+    //private final ArrayList<ProjectEntry.Setup.Observation> observations;
 
-    public ObservationList(Activity context, List<Integer> id, HashMap<Integer, ProjectEntry.Setup.Observation> observationsHashMap) {
+    public ObservationList(Activity context,
+                           List<Integer> id,
+                           List<ProjectEntry.Setup.Observation> observation) {
         super(context, R.layout.list_observation, id);
         this.context = context;
-        this.observations = new ArrayList<>(observationsHashMap.values());
+        this.observation = observation;
+        //this.observation = new ArrayList<>(observationsHashMap.values());
         this.id = id;
 
     }
@@ -74,7 +78,8 @@ public class ObservationList extends ArrayAdapter {
         Log.i("ObservationList", "getView");
         try {
             //ProjectEntry.Setup.Observation obs = observations.get(id.get(position));
-            ProjectEntry.Setup.Observation obs = observations.get(position);
+            //ProjectEntry.Setup.Observation obs = observations.get(position);
+            ProjectEntry.Setup.Observation obs = this.observation.get(position);
 
             textId.setText(String.valueOf(obs.getId()));
             //measurementText.setText(String.valueOf(obs.getMeasurement()));
@@ -111,12 +116,13 @@ public class ObservationList extends ArrayAdapter {
             Toast.makeText(ObservationList.this.context, "" + position, Toast.LENGTH_SHORT).show();
 
             // After remove row from list call this
-            Log.i("ObservationList","Deleting Obs. " + String.valueOf(observations.get(position).getId()) );
+            //Log.i("ObservationList","Deleting Obs. " + String.valueOf(observations.get(position).getId()) );
 
             //Delete observation in current setup
             //ObservationsFragment.setup.deleteObservation(id.get(position));
-            ObservationsFragment.observationsAdapter.remove(id.get(position));
-            ObservationsFragment.observationsAdapter.notifyDataSetChanged();
+//            ObservationsFragment.observationsAdapter.remove(id.get(position));
+//            ObservationsFragment.observationsAdapter.notifyDataSetChanged();
+//            ObservationsFragment.deleteObservation(id.get(position));
             //ObservationsFragment.removeObservation(id.get(position));
 
 
