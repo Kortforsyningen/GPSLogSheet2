@@ -95,6 +95,7 @@ Current progress:
 - [x] Initial layout
 - [x] Create SQLite database
 - [x] Settings activity
+    - [ ] TODO: auto remove spaces after username
 - [x] Interface with the server
 - [x] Create ETL (Extract, Transform, Load) functions
 - [x] Ability to save projects
