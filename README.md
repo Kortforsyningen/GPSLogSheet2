@@ -10,11 +10,11 @@ Android app that facilitates the metadata collection for GPS measurements
 
 ## Introduction
 
-DRAFT!
-This is very much a work in progress.
-
 GPSLogSheet2 is a metadata collector and script generator for the height measurements performed for
 the reference network of GNNS stations.
+
+The goal is to upload meta-data and generated GNNS post processing scripts to a FTP server, for use
+with GNNS measurements made in the field.
 
 ## Installation
 
@@ -41,14 +41,25 @@ In the specified path, or root if no path specified, folders called 'settings', 
     Example: "KMS3, K-01-02584, 12.5362469, 55.7046712"
 
 - **alarms.csv**:
+    Contains a comma seperated list of alarms with ID number (integer) and alarm name.
+    Example: "1, Alarm1"
 
 - **antennas.csv**:
+    Contains a comma seperated list of antennas with ID number (integer), antenna name
+    and antenna serial number.
+    Example: "1, ASH701941.B, CRL20011301"
 
 - **instruments.csv**:
+    Contains a comma seperated list of instruments with ID number (integer) and instrument name.
+    Example: "17, Javad_Sigma 1"
 
 - **rods.csv**:
-
-- **recipe.txt**:  
+    Contains a comma seperated list of rods with ID number (integer), rod name and rod length.
+    Example: "1, Roddie McRodFace, 1.89"
+    
+- **recipe.txt**:  The recipe is used to generate each line in the batch script used for
+    post processing of the GNNS data.
+    Here is an example recipe:
     
       // recipe.txt
       //
@@ -62,6 +73,7 @@ In the specified path, or root if no path specified, folders called 'settings', 
       //  hs_name
       //  antenna_name
       //  antenna_height
+      //  antenna_serial
       //
       //  YYYYmmdd
       //  YYYY-mm-dd
@@ -92,25 +104,36 @@ In the specified path, or root if no path specified, folders called 'settings', 
 
 Current progress:
 
-- [x] Initial layout
+- [ ] Initial layout
+    - [x] Settings
+    - [x] MainActivity 
 - [x] Create SQLite database
 - [x] Settings activity
     - [ ] TODO: auto remove spaces after username
+    - [ ] optional: add Agency setting (See recipe above)
 - [x] Interface with the server
 - [x] Create ETL (Extract, Transform, Load) functions
-- [x] Ability to save projects
-- [x] Ability to load projects
-- [ ] (Support for other postprocessing tool than TEQC)
+    - [ ] TODO: 
+- [x] Ability to save projects (locally)
+- [x] Ability to load projects (locally)
+- [x] Ability to delete projects (locally)
+    - [ ] TODO: Also delete photos associated with project. 
+- [x] GUI for project
+    - [ ] GUI for setup
+        - [ ] GUI for observation (measurement)
+        - [ ] TODO: Bug that makes new observations not appear. Relates to using hashmap with array
+        adapter. Unclear how to solve this.
+- [ ] Generation of .bat scripts from recipe 
     - [x] Single line generated from recipe 
     - [ ] Multiple lines
-- [ ] Generation of .bat scripts from the above recipe
-- [ ] Upload of .bat scripts
+    - [ ] (Support for other postprocessing tool than TEQC)
+- [ ] Upload of .bat scripts to server
 - [ ] Upload of projects to server
 - [x] Camera integration
     - [x] Takes and saves pictures locally
-    - [ ] Allow user to comment on, delete, rename pictures. 
+    - [ ] Allow user to comment on, delete, rename pictures.
+    - [ ] Upload of pictures with project.
 - [x] GPS integration
-- [ ] Upload of projects (with pictures) to server
 - [ ] GUI reevaluation and optimization
 
 
@@ -122,7 +145,8 @@ use and data collection.
 Projects are JSON (JavaScript Object Notation) objects and converted into strings and saved in the
 database as CLOBs (Character Large Object).
 
-Images taken with the camera may also be saved in the database, as BLOBs (Binary Large Object)
+Images taken with the camera may also be saved in the database, as BLOBs (Binary Large Object).
+Currently they are saved as files on the device.
 
 AppCompatPreferenceActivity is used for user preferences, such as username, passwords, update
 preferences etc.
@@ -146,12 +170,12 @@ describes. See comments in code for more depth.
                                      antenna, alarm and take photos.
                 - [ ] __PhotoList.java__ List of photos taken, photos can be opened, (__TODO: delete,
                                          rename, comment.__)
-        - [ ] __ObservationsFragment.java__ Here user can (__TODO: add measurements, select rods, see
+        - [ ] __ObservationsFragment.java__ Here user can (__TODO: fix add measurements, select rods, see
                                             list of past measurements in project__) 
-        - [ ] __MapsFragment.java__ TODO: Show a map of the surroundings based on device GPS or
+        - [ ] optional __MapsFragment.java__ TODO: Show a map of the surroundings based on device GPS or
                                         chosen fixedpoint.
         - [ ] __ExtrasFragment.java__ Placeholder fragment
-    - [ ] __Huh__
+
         
 ### Data structures
 The following classes mostly contain fields with corresponding getters and setters.
