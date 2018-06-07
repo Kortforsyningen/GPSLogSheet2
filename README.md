@@ -28,6 +28,8 @@ The file gpslogsheet2.apk can now be sideloaded onto the device.
 
 ## Usage
 
+### Initial setup:
+
 First time the app is run, it is necessary to update the internal database with settings from a
 server (ftp). The server address, path (optional), username and password, must be set. The app will
 then attempt to fill the database 
@@ -68,21 +70,22 @@ In the specified path, or root if no path specified, folders called 'settings', 
       // Example: "-O.r "${operator}"" Will become: "-O.r "OLDJO"" if operator is OLDJO
       //
       // Valid tokens are:
+      //  project_name
       //  operator
       //  gps_name
       //  hs_name
+      //  instrument
       //  antenna_name
       //  antenna_height
       //  antenna_serial
-      //
-      //  YYYYmmdd
-      //  YYYY-mm-dd
-      //  YYYY (year)
-      //  YY (year, last two)
-      //  mm  (month)
-      //  ddd (day_of_year)
-      //  dd (day of month)
       //  
+      //
+      //  YYYY
+      //  YY (year, last two)
+      //  day_of_year
+      //  MM  (month)
+      //  dd (day of month)
+      //  YYYmmdd
       //
       //  The below (default) recreates the line from the original gpslogsheet
       teqc -javad jps -O.obs L1L2C1P1P2D1D2S1S2
@@ -99,6 +102,21 @@ In the specified path, or root if no path specified, folders called 'settings', 
       -e ${YYYYmmdd}235945.000 //(set windowing end time YYYYmmdd + 235945.000) 
       ${gps_name}.jps > ${gps_name}0${day_of_year}0.${YY}0 //(gps_point name, gps_point name dayofyear.year 0)
     
+### Using the app in the field.
+
+The user can start a new Project by pressing the "New project" button.
+The user is now asked to name the project and also name the operator on the project.
+The end date can be set, but is optional, but needed to generate batch scripts.
+
+To the right of the project settings, the project setups are presented as tabs and more can
+be added using the "Add setup" button.
+If the device GPS is ready, the fixed point can be found suing the "Use location" button.
+Alternatively a fixed point can be chosen from the drop-down menu.
+Instrument, antenna, and alarm can be chosen from drop down menus as well.
+
+Photos can be taken using the capture photo button, and are associated to each setup.
+
+
 
 ## Development
 
@@ -120,13 +138,17 @@ Current progress:
     - [ ] TODO: Also delete photos associated with project. 
 - [x] GUI for project
     - [ ] GUI for setup
+    - [ ] TODO: Name setups
+    - [ ] TODO: Delete setups
         - [ ] GUI for observation (measurement)
+        - [ ] TODO: BUG: Does not change to correct setup yet (has to do with "lifetime" of
+        observation fragment I think.)
         - [ ] TODO: Bug that makes new observations not appear. Relates to using hashmap with array
         adapter. Unclear how to solve this.
 - [ ] Generation of .bat scripts from recipe 
     - [x] Single line generated from recipe 
     - [ ] Multiple lines
-    - [ ] (Support for other postprocessing tool than TEQC)
+    - [x] (Support for other postprocessing tool than TEQC, yes via recipe change)
 - [ ] Upload of .bat scripts to server
 - [ ] Upload of projects to server
 - [x] Camera integration
