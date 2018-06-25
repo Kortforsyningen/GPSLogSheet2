@@ -116,9 +116,19 @@ Instrument, antenna, and alarm can be chosen from drop down menus as well.
 
 Photos can be taken using the capture photo button, and are associated to each setup.
 
-
-
 ## Development
+
+Monday 25th of June 2018:
+Current state of App is very alpha.
+
+Initially the priority was on implementing the things that the original GPSLogSheet did not deliver;
+such as being able to change the tables of data that the app uses.
+These were hard-coded before, but are now downloaded from a ftp server, which the user
+specifies. The app also supports changing the generating code for the batch scripts.
+
+A current obstacle is getting Google's Android GUI API to work well with the hashmap that
+is meant to store observations that the user makes (see below). Using hashmap might have
+to be entirely abandoned, in favor of some other method.
 
 Current progress:
 
@@ -131,7 +141,7 @@ Current progress:
     - [ ] optional: add Agency setting (See recipe above)
 - [x] Interface with the server
 - [x] Create ETL (Extract, Transform, Load) functions
-    - [ ] TODO: 
+    - [ ] TODO: Quality check.
 - [x] Ability to save projects (locally)
 - [x] Ability to load projects (locally)
 - [x] Ability to delete projects (locally)
@@ -150,13 +160,16 @@ Current progress:
     - [ ] Multiple lines
     - [x] (Support for other postprocessing tool than TEQC, yes via recipe change)
 - [ ] Upload of .bat scripts to server
-- [ ] Upload of projects to server
+- [ ] Upload of projects to server. 
+The JSON is already generated, it stores all the project info, it just needs to be uploaded, perhaps into a
+"/projects/<project name>_<date>" folder, along with pictures.
 - [x] Camera integration
     - [x] Takes and saves pictures locally
     - [ ] Allow user to comment on, delete, rename pictures.
     - [ ] Upload of pictures with project.
 - [x] GPS integration
-- [ ] GUI reevaluation and optimization
+- [ ] GUI reevaluation and optimization.
+Right now the GUI feels cramped and buttons have arbitrary sizes.
 
 
 Target Android SDK is 25 and min SDK is ~~22~~ 24 (Updated to be able to use datePickerDialog).
