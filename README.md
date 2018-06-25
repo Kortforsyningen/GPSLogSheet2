@@ -130,6 +130,9 @@ A current obstacle is getting Google's Android GUI API to work well with the has
 is meant to store observations that the user makes (see below). Using hashmap might have
 to be entirely abandoned, in favor of some other method.
 
+All in all: A lot of GUI work needs doing, but the framework for the underlying functionality is mostly
+completed.
+
 Current progress:
 
 - [ ] Initial layout
